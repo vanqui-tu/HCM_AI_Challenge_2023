@@ -3,8 +3,8 @@ import json
 from tqdm import tqdm
 from youtube_transcript_api import YouTubeTranscriptApi
 
-METADATA_PATH = "./data/metadata"
-NO_SCRIPT_PATH = "./data/scripts/no_scripts.txt"
+METADATA_PATH = "./../data/metadata"
+NO_SCRIPT_PATH = "./../data/scripts/no_scripts.txt"
 
 if __name__ == "__main__":
     metadata_list = os.listdir(METADATA_PATH)
@@ -41,5 +41,3 @@ if __name__ == "__main__":
         with open(NO_SCRIPT_PATH, 'w') as f:
             f.write(no_script_list)
         f.close()
-        if idx == 10:
-            exit()
