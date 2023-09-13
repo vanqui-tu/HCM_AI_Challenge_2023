@@ -1,1 +1,7 @@
-data/*/
+data/features/
+data/keyframes/
+data/map-keyframes/
+data/metadata/
+data/objects/
+data/videos/
+.history

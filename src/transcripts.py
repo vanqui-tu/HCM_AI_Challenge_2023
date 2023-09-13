@@ -13,6 +13,7 @@ with open(NO_SCRIPT_PATH, 'r', encoding="utf-8") as file:
 for line in tqdm(lines):
     # Xuat file audio
     transcribed_audio_file_name = f"./../data/scripts/{line.strip()}.wav"
+    compressed_trans_audio_file_name = f"./../data/scripts/{line.strip()}.mp3"
     zoom_video_file_name = f"./../data/videos/{line.strip()}.mp4"  
     audioclip = AudioFileClip(zoom_video_file_name)
     audioclip.write_audiofile(transcribed_audio_file_name)
@@ -22,16 +23,18 @@ for line in tqdm(lines):
         frames = f.getnframes()
         rate = f.getframerate()
         duration = frames / float(rate)
-    total_duration = math.ceil(duration / 60)
+    steps = math.ceil(duration / 60)
 
     # Xuat file transcript
     r = sr.Recognizer()
-    f = open(f"./../data/scripts/{line.strip()}.txt" , "a")  
-    for i in range(0, total_duration):
-        with sr.AudioFile(transcribed_audio_file_name) as source:
-            audio = r.record(source, offset=i*60, duration=60) 
-        f.write(r.recognize_google(audio, language='vi').lower())
-        f.write(" ")    
-    f.close()
-
+    with open(f"./../data/scripts/{line.strip()}.txt" , mode="a", encoding="utf-8", errors='ignore') as f:
+        for i in range(steps):
+            with sr.AudioFile(transcribed_audio_file_name) as source:
+                offset = i*60
+                audio = r.record(source, offset=offset, duration=min(60, duration-offset))
+                try:
+                    f.write(r.recognize_google(audio, language='vi').lower() + " ")
+                except:
+                    pass
+        f.close()
     os.remove(transcribed_audio_file_name)
