@@ -36,7 +36,6 @@ if __name__ == "__main__":
         text_path = file_path.replace('metadata', 'scripts')
         text_path = text_path.replace('json', 'txt')
         with open(text_path, 'w') as f:
-            print(text)
             f.write(text)
         f.close()
         with open(NO_SCRIPT_PATH, 'w') as f:
