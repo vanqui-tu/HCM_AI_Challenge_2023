@@ -13,7 +13,7 @@ if __name__ == "__main__":
         if ".json" not in file:
             continue
         file_path = os.path.join(METADATA_PATH, file)
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8", errors='ignore') as f:
             file_data = json.load(f)
         f.close()
         
@@ -35,10 +35,9 @@ if __name__ == "__main__":
 
         text_path = file_path.replace('metadata', 'scripts')
         text_path = text_path.replace('json', 'txt')
-        with open(text_path, 'w') as f:
-            print(text)
-            f.write(text)
+        with open(text_path, 'w', encoding="utf-8", errors='ignore') as f:
+            f.write(text.lower())
         f.close()
-        with open(NO_SCRIPT_PATH, 'w') as f:
+        with open(NO_SCRIPT_PATH, 'w', encoding="utf-8", errors='ignore') as f:
             f.write(no_script_list)
         f.close()
