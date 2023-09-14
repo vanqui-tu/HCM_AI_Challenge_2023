@@ -5,3 +5,4 @@ data/metadata/
 data/objects/
 data/videos/
 .history
+src/vectordb/*
