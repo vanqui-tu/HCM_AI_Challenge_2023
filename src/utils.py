@@ -6,7 +6,7 @@ def create_html_script(images):
         <style>
             .image-list {
                 display: grid;
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(2, 1fr);
                 grid-gap: 10px;
                 max-height: 300px;
                 overflow-y: scroll;
@@ -57,8 +57,8 @@ def create_html_script(images):
         link = f"http://www.watchframebyframe.com/watch/yt/{image['link']}"
         div_child = f"""
             <div class="image-item">
-                <img src="../data/keyframes/{image['video']}/{image['frame']}.jpg" alt="Ảnh 1">
-                <figcaption>{image['video']} - {image['frame']}</figcaption>            
+                <img src="{image['path']}" alt="Ảnh 1">
+                <figcaption>{image['video']} - {image['frame']} - {image['s']}</figcaption>            
                 <a href={link} target="_blank">Xem chi tiết</a>
             </div>
         """
@@ -80,17 +80,22 @@ if __name__ == "__main__":
         {
             "video": "L01_V001",
             "frame": "0001",
-            "link": "ZhvUGNvPBtQ"
+            "link": "ZhvUGNvPBtQ",
+            "s": 321.2
+            
         },
         {
             "video": "L01_V001",
             "frame": "0010",
-            "link": "ZhvUGNvPBtQ"
+            "link": "ZhvUGNvPBtQ",
+            "s": 321.2
         },
         {
+            
             "video": "L01_V001",
             "frame": "0100",
-            "link": "ZhvUGNvPBtQ"
+            "link": "ZhvUGNvPBtQ",
+            "s": 321.2
         },
     ]
 
