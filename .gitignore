@@ -7,3 +7,4 @@ data/videos/
 .history
 src/vectordb/*
 src/.ipynb_checkpoints/*
+src/__pycache__/*
