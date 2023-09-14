@@ -41,3 +41,4 @@ if __name__ == "__main__":
         with open(NO_SCRIPT_PATH, 'w', encoding="utf-8", errors='ignore') as f:
             f.write(no_script_list)
         f.close()
+

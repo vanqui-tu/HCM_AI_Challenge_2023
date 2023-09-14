@@ -6,3 +6,4 @@ data/objects/
 data/videos/
 .history
 src/vectordb/*
+src/.ipynb_checkpoints/*
