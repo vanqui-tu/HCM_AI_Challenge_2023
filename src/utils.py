@@ -8,7 +8,7 @@ def create_html_script(images):
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
                 grid-gap: 10px;
-                max-height: 300px;
+                max-height: 900px;
                 overflow-y: scroll;
             }
 
@@ -74,29 +74,19 @@ def create_html_script(images):
 
     return html_script
 
+def get_all_scripts():
+    path = "../data/scripts"
+    list_script = os.listdir(path)
+    all_scripts = []
+    for script in list_script:
+        if not ".txt" in script:
+             continue
+        script_path = os.path.join(path, script)
+        with open(script_path, 'r') as file:
+                content = file.read()
+                all_scripts.append(content)
+    
+    return list_script, all_scripts
 
 if __name__ == "__main__":
-    images= [
-        {
-            "video": "L01_V001",
-            "frame": "0001",
-            "link": "ZhvUGNvPBtQ",
-            "s": 321.2
-            
-        },
-        {
-            "video": "L01_V001",
-            "frame": "0010",
-            "link": "ZhvUGNvPBtQ",
-            "s": 321.2
-        },
-        {
-            
-            "video": "L01_V001",
-            "frame": "0100",
-            "link": "ZhvUGNvPBtQ",
-            "s": 321.2
-        },
-    ]
-
-    print(create_html_script(images))
+    get_all_scripts()
