@@ -74,19 +74,36 @@ def create_html_script(images):
 
     return html_script
 
+def remove_stopwords(doc, stopwords):
+    words = doc.split()
+
+    # Lọc bỏ các stopwords
+    filtered_words = [word for word in words if word not in stopwords]
+
+    # Kết hợp các từ lại thành một đoạn văn
+    filtered_doc = ' '.join(filtered_words)
+
+    return filtered_doc
+
 def get_all_scripts():
+    # Get list stopword
+    with open("./stopwords.txt", 'r', encoding='utf-8') as file:
+        stopwords = file.read().splitlines()
+
     path = "../data/scripts"
     list_script = os.listdir(path)
     all_scripts = []
+    list_file = []
     for script in list_script:
         if not ".txt" in script:
              continue
+        list_file.append(script)
         script_path = os.path.join(path, script)
         with open(script_path, 'r') as file:
                 content = file.read()
-                all_scripts.append(content)
+                all_scripts.append(remove_stopwords(content, stopwords))
     
-    return list_script, all_scripts
+    return list_file, all_scripts
 
 if __name__ == "__main__":
     get_all_scripts()
