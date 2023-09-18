@@ -1,6 +1,118 @@
+# IMPORT
 import os
 import numpy as np
+import shutil
+import json as js
+import pandas as pd
+from vector_database import FrameDoc
+from const import *
+from IPython.display import display, HTML
 
+
+def remove_stopwords(doc, stopwords):
+    words = doc.split()
+
+    # Lọc bỏ các stopwords
+    filtered_words = [word for word in words if word not in stopwords]
+
+    # Kết hợp các từ lại thành một đoạn văn
+    filtered_doc = " ".join(filtered_words)
+
+    return filtered_doc
+
+
+def get_all_scripts():
+    # Get list stopword
+    with open("./stopwords.txt", "r", encoding="utf-8") as file:
+        stopwords = file.read().splitlines()
+
+    path = "../data/scripts"
+    list_script = os.listdir(path)
+    all_scripts = []
+    list_file = []
+    for script in list_script:
+        if not ".txt" in script:
+            continue
+        list_file.append(script)
+        script_path = os.path.join(path, script)
+        with open(script_path, "r") as file:
+            content = file.read()
+            all_scripts.append(remove_stopwords(content, stopwords))
+
+    return list_script, all_scripts
+
+
+def format_keyframes():
+    video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
+    for name in video_names:
+        keyframes = [path for path in os.listdir(os.path.join(KEYFRAME_PATH, name))]
+    for kf in keyframes:
+        img_name = kf.split(".")[0]
+        if len(img_name) != LEN_OF_KEYFRAME_NAME:
+            changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
+            old_path = os.path.join(KEYFRAME_PATH, name, kf)
+            print(f"Change {old_path} to {changed_path}")
+            os.rename(old_path, changed_path)
+
+def clean_dbs():
+    DBs = [
+        os.path.abspath(os.path.join(WORKSPACE, path)) for path in os.listdir(WORKSPACE)
+    ]
+    for db in DBs:
+        shutil.rmtree(db)
+
+def get_all_docs(npy_files):
+    doc_list = []
+    for feat_npy in npy_files:
+        video_name = feat_npy[feat_npy.find("L") :].split(".")[0]
+        feats_arr = np.load(os.path.join(feat_npy))
+        # Load metadata
+        metadata = {}
+        with open(os.path.join(METADATA_PATH, video_name + ".json")) as meta_f:
+            metadata = js.load(meta_f)
+            map_kf = pd.read_csv(
+                os.path.join(MAP_KEYFRAMES, video_name + ".csv"),
+                usecols=["pts_time", "fps", "frame_idx"],
+            )
+            metadata = {key: metadata[key] for key in ["publish_date", "watch_url"]}
+            for frame_idx, feat in enumerate(feats_arr):
+                image_path = os.path.join(
+                    KEYFRAME_PATH, video_name, f"{frame_idx + 1:04d}.jpg"
+                )
+                actual_idx = map_kf["frame_idx"][frame_idx]
+                doc_list.append(
+                    FrameDoc(
+                        embedding=feat,
+                        video_name=video_name,
+                        image_path=image_path,
+                        keyframe_id=frame_idx + 1,
+                        actual_idx=actual_idx,
+                        actual_time=map_kf["pts_time"][frame_idx],
+                        fps=map_kf["fps"][frame_idx],
+                        metadata=metadata,
+                    )
+                )
+
+    return doc_list
+
+def get_all_feats():
+    return [
+        os.path.join(FEATURE_PATH, file)
+        for file in os.listdir(FEATURE_PATH)
+        if file.endswith(".npy")
+    ]
+    
+def reformat_keyframe():
+    video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
+    for name in video_names:
+        keyframes = [path for path in os.listdir(os.path.join(KEYFRAME_PATH, name))]
+    for kf in keyframes:
+        img_name = kf.split(".")[0]
+        if len(img_name) != LEN_OF_KEYFRAME_NAME:
+            changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
+            old_path = os.path.join(KEYFRAME_PATH, name, kf)
+            print(f"Change {old_path} to {changed_path}")
+            os.rename(old_path, changed_path)
 
 def create_html_script(images):
     styles = """
@@ -64,7 +176,7 @@ def create_html_script(images):
             </div>
         """
         div_childs += div_child
-    
+
     html_script = f"""
         {styles}
        <div class="image-list">
@@ -75,68 +187,21 @@ def create_html_script(images):
 
     return html_script
 
-def remove_stopwords(doc, stopwords):
-    words = doc.split()
-
-    # Lọc bỏ các stopwords
-    filtered_words = [word for word in words if word not in stopwords]
-
-    # Kết hợp các từ lại thành một đoạn văn
-    filtered_doc = ' '.join(filtered_words)
-
-    return filtered_doc
-
-def get_all_scripts():
-    # Get list stopword
-    with open("./stopwords.txt", 'r', encoding='utf-8') as file:
-        stopwords = file.read().splitlines()
-
-    path = "../data/scripts"
-    list_script = os.listdir(path)
-    all_scripts = []
-    list_file = []
-    for script in list_script:
-        if not ".txt" in script:
-             continue
-        list_file.append(script)
-        script_path = os.path.join(path, script)
-        with open(script_path, 'r') as file:
-                content = file.read()
-                all_scripts.append(remove_stopwords(content, stopwords))
-    
-    return list_script, all_scripts
-METADATA_PATH = "../data/metadata/"
-KEYFRAME_PATH = "../data/keyframes/"
-FEATURE_PATH = "../data/features/"
-MAP_KEYFRAMES = "../data/map-keyframes/"
-VIDEOS_PATH = "../data/videos/"
-SCRIPT_PATH = "../data/scripts/"
-
-WORKSPACE = "./vectordb"
-LEN_OF_KEYFRAME_NAME = 4
-def format_keyframes():
-    video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
-    for name in video_names:
-        keyframes = [path for path in os.listdir(os.path.join(KEYFRAME_PATH, name))]
-    for kf in keyframes:
-        img_name = kf.split(".")[0]
-        if len(img_name) != LEN_OF_KEYFRAME_NAME:
-            changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
-            old_path = os.path.join(KEYFRAME_PATH, name, kf)
-            print(f"Change {old_path} to {changed_path}")
-            os.rename(old_path, changed_path)
-            
-import shutil
-def clean_dbs():
-    DBs = [os.path.abspath(os.path.join(WORKSPACE, path)) for path in os.listdir(WORKSPACE)]
-    for db in DBs:
-        shutil.rmtree(db)
-        
-def get_all_feats():
+def FrameDocToImage(docs):
     return [
-        os.path.join(FEATURE_PATH, file)
-        for file in os.listdir(FEATURE_PATH)
-        if file.endswith(".npy")
+        {
+            "link": doc.metadata["watch_url"].split("v=")[-1],
+            "path": doc.image_path,
+            "video": doc.video_name,
+            "frame": doc.actual_idx,
+            "s": str(int(doc.actual_time) // 60)
+            + "'"
+            + str(round(doc.actual_time - 60 * (int(doc.actual_time) // 60), 1)),
+        }
+        for doc in docs
     ]
     
-
+def visualize(docs):
+    display(HTML(create_html_script(FrameDocToImage(docs))))
+if __name__ == '__main__':
+    pass
