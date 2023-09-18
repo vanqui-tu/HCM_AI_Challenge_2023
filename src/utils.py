@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+
 def create_html_script(images):
     styles = """
         <style>
@@ -87,6 +88,38 @@ def get_all_scripts():
                 all_scripts.append(content)
     
     return list_script, all_scripts
+METADATA_PATH = "../data/metadata/"
+KEYFRAME_PATH = "../data/keyframes/"
+FEATURE_PATH = "../data/features/"
+MAP_KEYFRAMES = "../data/map-keyframes/"
+VIDEOS_PATH = "../data/videos/"
+SCRIPT_PATH = "../data/scripts/"
 
-if __name__ == "__main__":
-    get_all_scripts()
+WORKSPACE = "./vectordb"
+LEN_OF_KEYFRAME_NAME = 4
+def format_keyframes():
+    video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
+    for name in video_names:
+        keyframes = [path for path in os.listdir(os.path.join(KEYFRAME_PATH, name))]
+    for kf in keyframes:
+        img_name = kf.split(".")[0]
+        if len(img_name) != LEN_OF_KEYFRAME_NAME:
+            changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
+            old_path = os.path.join(KEYFRAME_PATH, name, kf)
+            print(f"Change {old_path} to {changed_path}")
+            os.rename(old_path, changed_path)
+            
+import shutil
+def clean_dbs():
+    DBs = [os.path.abspath(os.path.join(WORKSPACE, path)) for path in os.listdir(WORKSPACE)]
+    for db in DBs:
+        shutil.rmtree(db)
+        
+def get_all_feats():
+    return [
+        os.path.join(FEATURE_PATH, file)
+        for file in os.listdir(FEATURE_PATH)
+        if file.endswith(".npy")
+    ]
+    
+
