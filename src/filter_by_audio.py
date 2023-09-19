@@ -28,7 +28,6 @@ def filter_by_audio(result, keywords):
             pass
     return result
 
-
 print("Get all script...")
 list_script, documents = get_all_scripts()
 print("Finished!")
@@ -66,28 +65,35 @@ def separate_paragraphs(script, max_word=128):
 
 
 # WITH BERT
+TRAIN = False
 print("Set up Bert and faiss")
-document_embeddings = []
-name_parents = []
-for i, doc in enumerate(documents):
-    child_scripts = separate_paragraphs(doc)
-    for i_child, part in enumerate(child_scripts):
-        inputs = tokenizer(part, return_tensors="pt", padding=True, truncation=True)
-        inputs = {key: value.to(device) for key, value in inputs.items()}  # Chuyển dữ liệu lên GPU
-        with torch.no_grad():
-            outputs = model(**inputs)
-        embeddings = outputs.last_hidden_state.mean(dim=1)  # Sử dụng trung bình của các embeddings từ BERT
-        document_embeddings.append(embeddings)
-        name_parents.append(list_script[i])
-        
-np_document_embeddings = np.vstack([x.cpu().numpy() for x in document_embeddings])
+if TRAIN:
+    print("<--Train-->")
+    document_embeddings = []
+    name_parents = []
+    for i, doc in enumerate(documents):
+        child_scripts = separate_paragraphs(doc)
+        for i_child, part in enumerate(child_scripts):
+            inputs = tokenizer(part, return_tensors="pt", padding=True, truncation=True)
+            inputs = {key: value.to(device) for key, value in inputs.items()}  # Chuyển dữ liệu lên GPU
+            with torch.no_grad():
+                outputs = model(**inputs)
+            embeddings = outputs.last_hidden_state.mean(dim=1)  # Sử dụng trung bình của các embeddings từ BERT
+            document_embeddings.append(embeddings)
+            name_parents.append(list_script[i])
+            
+    np_document_embeddings = np.vstack([x.cpu().numpy() for x in document_embeddings])
+    np.save("./../data/np_document_embeddings.npy", np_document_embeddings)
+else:
+    np_document_embeddings = np.load("./../data/np_document_embeddings.npy")
+
 d = np_document_embeddings.shape[1]
 index = faiss.IndexFlatL2(d)
 index.add(np_document_embeddings)
 print("Finished!")
 
 
-def predict(keywords: list[str], results, csv_name, mode = 0):
+def predict(keywords, results, csv_name, mode = 0):
     max_lines = 100
     top_videos = []
     keywords = [kw.lower() for kw in keywords]

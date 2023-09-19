@@ -8,6 +8,44 @@ from vector_database import FrameDoc
 from const import *
 from IPython.display import display, HTML
 
+def filter_by_detail_scripts(keyword=""):
+    list_scripts = []
+    list_file = os.listdir("../data/scripts/")
+    for file in list_file:
+        if not "json" in file:
+            continue
+
+        times = []
+        file_path = os.path.join("../data/scripts/", file)
+        with open(file_path, 'r', encoding='utf-8') as json_file:
+                data = js.load(json_file)
+        json_file.close()
+        for line in data:
+            if keyword.strip() != "" and keyword.strip() in line["text"]:
+                start = str(int(line["start"]) // 60) + "'" + str(round(line["start"] - 60 * (int(line["start"]) // 60), 1)),
+                times.append(start)
+        
+        # TODO Object có dạng
+        '''
+            "link": 
+            "path": 
+            "video": 
+            "frame": 
+            "s": 
+        '''
+        if len(times) != 0:
+            with open("../data/metadata/" + file) as f:
+                metadata = js.load(f)
+            f.close()
+            list_scripts.append({
+                "link": metadata["watch_url"],
+                "path": metadata["thumbnail_url"],
+                "video": file[:-5],
+                "frame": "Không xác đinh",
+                "s": times
+            })
+
+    return list_scripts
 
 def remove_stopwords(doc, stopwords):
     words = doc.split()
@@ -19,7 +57,6 @@ def remove_stopwords(doc, stopwords):
     filtered_doc = " ".join(filtered_words)
 
     return filtered_doc
-
 
 def get_all_scripts():
     # Get list stopword
@@ -40,7 +77,6 @@ def get_all_scripts():
             all_scripts.append(remove_stopwords(content, stopwords))
 
     return list_script, all_scripts
-
 
 def format_keyframes():
     video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
@@ -201,7 +237,12 @@ def FrameDocToImage(docs):
         for doc in docs
     ]
     
-def visualize(docs):
-    display(HTML(create_html_script(FrameDocToImage(docs))))
+def visualize(docs, convert=True):
+    if convert:
+        display(HTML(create_html_script(FrameDocToImage(docs))))
+    else:
+        display(HTML(create_html_script(docs)))
 if __name__ == '__main__':
+    # list_scripts = filter_by_detail_scripts("thanh niên sẵn sàng ngày hội sống")
+    # print(list_scripts)
     pass
