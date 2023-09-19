@@ -6,6 +6,8 @@ import os
 
 NO_SCRIPT_PATH = "./../data/scripts/no_scripts.txt"
 
+GET_AUDIO_FILE = True
+
 # Doc danh sach
 with open(NO_SCRIPT_PATH, 'r', encoding="utf-8") as file:
     lines = file.readlines()
@@ -17,6 +19,9 @@ for line in tqdm(lines):
     zoom_video_file_name = f"./../data/videos/{line.strip()}.mp4"  
     audioclip = AudioFileClip(zoom_video_file_name)
     audioclip.write_audiofile(transcribed_audio_file_name)
+
+    if GET_AUDIO_FILE:
+        continue
 
     # Tinh thoi gian
     with contextlib.closing(wave.open(transcribed_audio_file_name,'r')) as f:

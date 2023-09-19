@@ -35,25 +35,32 @@ model.to(device)
 print("Finished!")
 
 # WITH BERT
+TRAIN = False
 print("Set up Bert and faiss")
-document_embeddings = []
-name_parents = []
-for i, doc in enumerate(documents):
-    child_scripts = separate_paragraphs(doc)
-    for i_child, part in enumerate(child_scripts):
-        inputs = tokenizer(part, return_tensors="pt", padding=True, truncation=True)
-        inputs = {
-            key: value.to(device) for key, value in inputs.items()
-        }  # Chuyển dữ liệu lên GPU
-        with torch.no_grad():
-            outputs = model(**inputs)
-        embeddings = outputs.last_hidden_state.mean(
-            dim=1
-        )  # Sử dụng trung bình của các embeddings từ BERT
-        document_embeddings.append(embeddings)
-        name_parents.append(list_script[i])
+if TRAIN:
+    print("<--Train-->")
+    document_embeddings = []
+    name_parents = []
+    for i, doc in enumerate(documents):
+        child_scripts = separate_paragraphs(doc)
+        for i_child, part in enumerate(child_scripts):
+            inputs = tokenizer(part, return_tensors="pt", padding=True, truncation=True)
+            inputs = {key: value.to(device) for key, value in inputs.items()}  # Chuyển dữ liệu lên GPU
+            with torch.no_grad():
+                outputs = model(**inputs)
+            embeddings = outputs.last_hidden_state.mean(dim=1)  # Sử dụng trung bình của các embeddings từ BERT
+            document_embeddings.append(embeddings)
+            name_parents.append(list_script[i])
+            
+    np_document_embeddings = np.vstack([x.cpu().numpy() for x in document_embeddings])
+    np.save("./../data/np_document_embeddings.npy", np_document_embeddings)
+    with open("./../data/name_parents.json", 'w', encoding='utf-8') as json_file:
+                js.dump(name_parents, json_file, ensure_ascii=False)
+else:
+    np_document_embeddings = np.load("./../data/np_document_embeddings.npy")
+    with open("./../data/name_parents.json", 'r', encoding='utf-8') as json_file:
+        name_parents = js.load(json_file)
 
-np_document_embeddings = np.vstack([x.cpu().numpy() for x in document_embeddings])
 d = np_document_embeddings.shape[1]
 index = faiss.IndexFlatL2(d)
 index.add(np_document_embeddings)
@@ -100,7 +107,7 @@ class FrameDocs:
     def __init__(self, doc_list) -> None:
         self.doc_list = doc_list.copy()
 
-    def __call__(self) -> list[FrameDoc]:
+    def __call__(self):
         return self.doc_list.copy()
 
     """_summary_

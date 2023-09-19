@@ -6,6 +6,7 @@ import numpy as np
 import shutil
 from const import *
 import re
+import json as js
 
 def filter_by_detail_scripts(keyword=""):
     list_scripts = []
@@ -37,7 +38,7 @@ def filter_by_detail_scripts(keyword=""):
                 metadata = js.load(f)
             f.close()
             list_scripts.append({
-                "link": metadata["watch_url"],
+                "link": metadata["watch_url"].split("=")[1],
                 "path": metadata["thumbnail_url"],
                 "video": file[:-5],
                 "frame": "Không xác đinh",
@@ -103,7 +104,7 @@ def get_all_scripts():
             content = file.read()
             all_scripts.append(remove_stopwords(content, stopwords))
 
-    return list_script, all_scripts
+    return list_file, all_scripts
 
 def format_keyframes():
     video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
