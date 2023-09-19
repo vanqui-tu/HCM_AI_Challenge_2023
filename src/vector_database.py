@@ -1,48 +1,11 @@
 import os
-import numpy as np
-from PIL import Image, ImageFont, ImageDraw
-import clip
-import json as js
 from docarray import DocList, BaseDoc
 from docarray.typing import NdArray
 from typing import List
-import numpy as np
 from vectordb import InMemoryExactNNVectorDB, HNSWVectorDB
-from natsort import natsorted
 import random
 from const import *
-
-class TextEmbedding:
-    def __init__(self):
-        self.device = DEVICE
-        self.model, _ = clip.load(MODEL, device=self.device)
-
-    def __call__(self, text: str) -> np.ndarray:
-        text_inputs = clip.tokenize([text]).to(self.device)
-        with torch.no_grad():
-            text_feature = self.model.encode_text(text_inputs)[0]
-        return text_feature.detach().cpu().numpy()
-    
-class FrameDoc(BaseDoc):
-    embedding: NdArray[512]
-    video_name = ""
-    image_path = ""
-    keyframe_id = 0
-    actual_idx = 0
-    actual_time = 0.0
-    fps=0
-    metadata = {}
-
-    def __str__(self):
-        return f"""
-            Video name: {self.video_name}
-            Image path: {self.image_path}
-            Keyframe Id: {self.keyframe_id}
-            Actual keyframe idx: {self.actual_idx}
-            Time: {self.actual_time}
-            FPS: {self.fps}
-            Metadata: {self.metadata}
-          """
+from framedoc import TextEmbedding, FrameDoc, FrameDocs
           
 class VectorDB:
     text_embedding = TextEmbedding()
@@ -72,15 +35,16 @@ class VectorDB:
         else:
             self.DB = InMemoryExactNNVectorDB[FrameDoc](workspace=self.workspace)
 
-    def index(self, doc_list: List[FrameDoc]):
+    def index(self, framedocs: FrameDocs):
+        doc_list = framedocs()
         # Index database
         self.DB.index(inputs=DocList[FrameDoc](doc_list))
 
-    def search(self, query_text: str, topk=100):
+    def search(self, query_text: str, topk=100) -> FrameDocs:
         query_doc = FrameDoc(embedding=self.text_embedding(query_text))
-        return self.DB.search(inputs=DocList[FrameDoc]([query_doc]), limit=topk)[
+        return FrameDocs(self.DB.search(inputs=DocList[FrameDoc]([query_doc]), limit=topk)[
             0
-        ].matches
+        ].matches)
 
     def delete(self, del_doc_list: List[FrameDoc]):
         self.DB.delete(docs=DocList[FrameDoc](del_doc_list))

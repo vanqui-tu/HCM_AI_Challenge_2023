@@ -1,13 +1,18 @@
 # IMPORT
 import os
+import sys
+sys.path.insert(1, '../models')
 import numpy as np
 import shutil
-import json as js
-import pandas as pd
-from vector_database import FrameDoc
 from const import *
-from IPython.display import display, HTML
+import re
 
+
+def check_script(file_content, keywords):
+    for keyword in keywords:
+        if (keyword not in file_content):
+            return False
+    return True
 
 def remove_stopwords(doc, stopwords):
     words = doc.split()
@@ -20,6 +25,27 @@ def remove_stopwords(doc, stopwords):
 
     return filtered_doc
 
+
+def separate_paragraphs(script, max_word=128):
+    # Tách đoạn văn thành danh sách các từ
+    words = re.findall(r'\b\w+\b', script)
+    
+    # Tính số lượng từ trong mỗi đoạn văn con
+    n_child_script = len(words) // max_word
+    
+    # Tạo danh sách các đoạn văn con
+    child_scripts = []
+    for i in range(n_child_script):
+        start = i * max_word
+        end = (i + 1) * max_word
+        if i == n_child_script - 1:
+            # Trường hợp cuối cùng, lấy tất cả từ còn lại
+            child_script = ' '.join(words[start:])
+        else:
+            child_script = ' '.join(words[start:end])
+        child_scripts.append(child_script)
+    
+    return child_scripts
 
 def get_all_scripts():
     # Get list stopword
@@ -35,7 +61,7 @@ def get_all_scripts():
             continue
         list_file.append(script)
         script_path = os.path.join(path, script)
-        with open(script_path, "r") as file:
+        with open(script_path, "r", encoding="utf-8") as file:
             content = file.read()
             all_scripts.append(remove_stopwords(content, stopwords))
 
@@ -58,42 +84,10 @@ def clean_dbs():
     DBs = [
         os.path.abspath(os.path.join(WORKSPACE, path)) for path in os.listdir(WORKSPACE)
     ]
+    
     for db in DBs:
         shutil.rmtree(db)
 
-def get_all_docs(npy_files):
-    doc_list = []
-    for feat_npy in npy_files:
-        video_name = feat_npy[feat_npy.find("L") :].split(".")[0]
-        feats_arr = np.load(os.path.join(feat_npy))
-        # Load metadata
-        metadata = {}
-        with open(os.path.join(METADATA_PATH, video_name + ".json")) as meta_f:
-            metadata = js.load(meta_f)
-            map_kf = pd.read_csv(
-                os.path.join(MAP_KEYFRAMES, video_name + ".csv"),
-                usecols=["pts_time", "fps", "frame_idx"],
-            )
-            metadata = {key: metadata[key] for key in ["publish_date", "watch_url"]}
-            for frame_idx, feat in enumerate(feats_arr):
-                image_path = os.path.join(
-                    KEYFRAME_PATH, video_name, f"{frame_idx + 1:04d}.jpg"
-                )
-                actual_idx = map_kf["frame_idx"][frame_idx]
-                doc_list.append(
-                    FrameDoc(
-                        embedding=feat,
-                        video_name=video_name,
-                        image_path=image_path,
-                        keyframe_id=frame_idx + 1,
-                        actual_idx=actual_idx,
-                        actual_time=map_kf["pts_time"][frame_idx],
-                        fps=map_kf["fps"][frame_idx],
-                        metadata=metadata,
-                    )
-                )
-
-    return doc_list
 
 def get_all_feats():
     return [
@@ -187,21 +181,6 @@ def create_html_script(images):
 
     return html_script
 
-def FrameDocToImage(docs):
-    return [
-        {
-            "link": doc.metadata["watch_url"].split("v=")[-1],
-            "path": doc.image_path,
-            "video": doc.video_name,
-            "frame": doc.actual_idx,
-            "s": str(int(doc.actual_time) // 60)
-            + "'"
-            + str(round(doc.actual_time - 60 * (int(doc.actual_time) // 60), 1)),
-        }
-        for doc in docs
-    ]
-    
-def visualize(docs):
-    display(HTML(create_html_script(FrameDocToImage(docs))))
+
 if __name__ == '__main__':
     pass

@@ -11,3 +11,5 @@ src/__pycache__/*
 src/cc.en.300.bin.gz
 src/Unconfirmed 313036.crdownload
 src/Unconfirmed 658356.crdownload
+src/submission
+queries
