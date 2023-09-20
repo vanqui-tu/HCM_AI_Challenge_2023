@@ -34,6 +34,8 @@ if __name__ == "__main__":
 
         if get_times:
             with open(text_path, 'w', encoding='utf-8') as json_file:
+                for line in script:
+                    line['text'] = line['text'].lower()
                 json.dump(script, json_file, ensure_ascii=False)
 
             # with open(text_path, 'r', encoding='utf-8') as json_file:
