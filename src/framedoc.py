@@ -110,6 +110,7 @@ class FrameDoc(BaseDoc):
             Time: {self.actual_time}
             FPS: {self.fps}
             Metadata: {self.metadata}
+            Object Labels: {self.object_labels}
           """
 
 
@@ -174,8 +175,9 @@ class FrameDocs:
         if given_objects:
             given_objects = check_exist_objects(objects=objects, given_objs=list(set(given_objects)))
             if given_objects:
-                given_objects = set(given_objects)
                 for i in range(len(doc_list) - 1, -1, -1):
+                    # print(given_objects)
+                    # print(doc_list[i].object_labels)
                     if not given_objects.issubset(doc_list[i].object_labels):
                         doc_list.pop(i)
 
@@ -243,7 +245,7 @@ def get_all_docs(npy_files) -> FrameDocs:
                             actual_idx=actual_idx,
                             actual_time=map_kf["pts_time"][frame_idx],
                             fps=map_kf["fps"][frame_idx],
-                            object_labels=set(data["detection_class_labels"]),
+                            object_labels=set([int(label) for label in data["detection_class_labels"]]),
                             metadata=metadata,
                         )
                     )

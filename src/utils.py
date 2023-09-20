@@ -259,7 +259,10 @@ def load_all_objects():
     pd.DataFrame(storage).to_csv("object_labels.csv", index=False)
     
 def get_all_objects():
-    return pd.read_csv("object_labels.csv").to_dict()
+    objs = pd.read_csv("object_labels.csv", index_col=0).to_dict()
+    # objs["entity"] = [item for item in objs["entity"]]
+    
+    return {"label": list(objs["entity"].keys()), "entity": list(objs["entity"].values())}
 
 def check_exist_object(objects: dict, given_obj: str) -> int:
     if given_obj in objects["entity"]:
@@ -274,8 +277,8 @@ def check_exist_objects(objects: dict, given_objs: list):
         if idx == -1:
             return None
         idxs.append(idx)
-    return idxs
+    return set(idxs)
 
 if __name__ == '__main__':
-    load_all_objects()
+    print(get_all_objects())
     
