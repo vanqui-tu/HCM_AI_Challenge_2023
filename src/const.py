@@ -8,5 +8,7 @@ FEATURE_PATH = "../data/features/"
 MAP_KEYFRAMES = "../data/map-keyframes/"
 VIDEOS_PATH = "../data/videos/"
 SCRIPT_PATH = "../data/scripts/"
+OBJECT_PATH = "../data/objects/"
+
 WORKSPACE = "./vectordb"
 LEN_OF_KEYFRAME_NAME = 4

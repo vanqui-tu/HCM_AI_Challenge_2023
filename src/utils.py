@@ -7,6 +7,10 @@ import shutil
 from const import *
 import re
 import json as js
+import pandas as pd
+from tqdm import tqdm
+import json
+from collections import Counter
 
 def filter_by_detail_scripts(keyword=""):
     list_scripts = []
@@ -138,13 +142,25 @@ def reformat_keyframe():
     video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
     for name in video_names:
         keyframes = [path for path in os.listdir(os.path.join(KEYFRAME_PATH, name))]
-    for kf in keyframes:
-        img_name = kf.split(".")[0]
-        if len(img_name) != LEN_OF_KEYFRAME_NAME:
-            changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
-            old_path = os.path.join(KEYFRAME_PATH, name, kf)
-            print(f"Change {old_path} to {changed_path}")
-            os.rename(old_path, changed_path)
+        for kf in keyframes:
+            img_name = kf.split(".")[0]
+            if len(img_name) != LEN_OF_KEYFRAME_NAME:
+                changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
+                old_path = os.path.join(KEYFRAME_PATH, name, kf)
+                print(f"Change {old_path} to {changed_path}")
+                os.rename(old_path, changed_path)
+            
+def reformat_object():
+    video_names = [name for name in os.listdir(OBJECT_PATH) if name != ".gitkeep"]
+    for name in video_names:
+        objs = [path for path in os.listdir(os.path.join(OBJECT_PATH, name))]
+        for obj in objs:
+            img_name = obj.split(".")[0]
+            if len(img_name) != LEN_OF_KEYFRAME_NAME:
+                changed_path = os.path.join(OBJECT_PATH, name, img_name.zfill(4) + ".json")
+                old_path = os.path.join(OBJECT_PATH, name, obj)
+                print(f"Change {old_path} to {changed_path}")
+                os.rename(old_path, changed_path)
 
 def create_html_script(images):
     styles = """
@@ -219,7 +235,47 @@ def create_html_script(images):
 
     return html_script
 
+def load_all_objects():
+    paths = [os.path.join(OBJECT_PATH, name) for name in os.listdir(OBJECT_PATH) if "gitkeep" not in name]
+    storage = {
+        "label": [],
+        "entity": []
+    }
+    for path in tqdm(paths):
+        objects_paths = [os.path.join(path, name) for name in os.listdir(path)]
+        for objects_path in tqdm(objects_paths):
+            with open(file=objects_path, mode="r") as f:
+                datas = json.load(f)
+                for i, label in enumerate(datas["detection_class_labels"]):   
+                    if label not in storage["label"]:
+                        storage["label"].append(label)
+                        storage["entity"].append(datas["detection_class_entities"][i])
+                    elif datas["detection_class_entities"][i] != storage["entity"][storage["label"].index(label)]:
+                        print(datas["detection_class_entities"][i])
+                        print(storage["entity"][storage["label"].index(label)])
+                        print("Something wrong with labels id...")
+                        return
+    storage["entity"] = [entity.lower() for entity in storage["entity"] ]
+    pd.DataFrame(storage).to_csv("object_labels.csv", index=False)
+    
+def get_all_objects():
+    return pd.read_csv("object_labels.csv").to_dict()
+
+def check_exist_object(objects: dict, given_obj: str) -> int:
+    if given_obj in objects["entity"]:
+        return objects["label"][objects["entity"].index(given_obj)]
+    print(f"Object {given_obj} not exists")
+    return -1
+
+def check_exist_objects(objects: dict, given_objs: list):
+    idxs = []
+    for obj in given_objs:
+        idx = check_exist_object(objects=objects, given_obj=obj)
+        if idx == -1:
+            return None
+        idxs.append(idx)
+    return idxs
+
 if __name__ == '__main__':
-    # list_scripts = filter_by_detail_scripts("thanh niên sẵn sàng ngày hội sống")
-    # print(list_scripts)
-    pass
+    load_all_objects()
+    

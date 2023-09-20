@@ -4,6 +4,7 @@ data/map-keyframes/
 data/metadata/
 data/objects/
 data/videos/
+data/scripts/*.wav
 .history
 src/vectordb/*
 src/.ipynb_checkpoints/*
