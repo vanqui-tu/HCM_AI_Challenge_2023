@@ -12,4 +12,5 @@ SCRIPT_PATH = "../data/scripts/"
 OBJECT_PATH = "../data/objects/"
 
 WORKSPACE = "./vectordb"
+ROOT_DB = "root"
 LEN_OF_KEYFRAME_NAME = 4

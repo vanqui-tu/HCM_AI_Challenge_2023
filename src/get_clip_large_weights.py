@@ -58,7 +58,7 @@ if __name__=='__main__':
     # Only L01 videos
     kf_folders = [name for name in os.listdir(KEYFRAME_PATH) 
                   if os.path.isdir(os.path.join(KEYFRAME_PATH, name)) 
-                  and name.startswith('L01')]
+                  and name.startswith('L07')]
     
     for kf_folder in tqdm(kf_folders):  
         dataset = KeyFrameDataset(vid=kf_folder, preprocess=preprocess)

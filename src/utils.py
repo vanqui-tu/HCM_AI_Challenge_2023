@@ -1,8 +1,5 @@
 # IMPORT
 import os
-import sys
-sys.path.insert(1, '../models')
-import numpy as np
 import shutil
 from const import *
 import re
@@ -10,7 +7,6 @@ import json as js
 import pandas as pd
 from tqdm import tqdm
 import json
-from collections import Counter
 
 def filter_by_detail_scripts(keyword=""):
     list_scripts = []
@@ -280,5 +276,5 @@ def check_exist_objects(objects: dict, given_objs: list):
     return set(idxs)
 
 if __name__ == '__main__':
-    print(get_all_objects())
+    pass
     

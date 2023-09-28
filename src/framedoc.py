@@ -1,82 +1,22 @@
-from typing import Any
 from const import *
 import numpy as np
 from docarray import DocList, BaseDoc
 from docarray.typing import NdArray
 import clip
-from transformers import AutoTokenizer, AutoModel, RobertaConfig
-import faiss
 from utils import (
-    separate_paragraphs,
-    get_all_scripts,
     check_script,
-    get_all_feats,
     create_html_script,
-    get_all_objects,
     reformat_keyframe,
-    reformat_object,
-    check_exist_object,
-    check_exist_objects
+    reformat_object
 )
 import json as js
 import pandas as pd
 import os
 from IPython.display import display, HTML
+from tqdm import tqdm
 
 reformat_keyframe()
 reformat_object()
-
-print("Set up...")
-print("Get all script...")
-list_script, documents = get_all_scripts()
-print("Finished!")
-
-print("Initalize Tokenizer and BERT model")
-# Khởi tạo tokenizer và mô hình BERT
-model_name = "vinai/phobert-base"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-configuration = RobertaConfig()
-model = AutoModel.from_pretrained(model_name)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using {device}.")
-model.to(device)
-print("Finished!")
-
-# WITH BERT
-TRAIN = False
-print("Set up Bert and faiss")
-if TRAIN:
-    print("<--Train-->")
-    document_embeddings = []
-    name_parents = []
-    for i, doc in enumerate(documents):
-        child_scripts = separate_paragraphs(doc)
-        for i_child, part in enumerate(child_scripts):
-            inputs = tokenizer(part, return_tensors="pt", padding=True, truncation=True)
-            inputs = {key: value.to(device) for key, value in inputs.items()}  # Chuyển dữ liệu lên GPU
-            with torch.no_grad():
-                outputs = model(**inputs)
-            embeddings = outputs.last_hidden_state.mean(dim=1)  # Sử dụng trung bình của các embeddings từ BERT
-            document_embeddings.append(embeddings)
-            name_parents.append(list_script[i])
-            
-    np_document_embeddings = np.vstack([x.cpu().numpy() for x in document_embeddings])
-    np.save("./../data/np_document_embeddings.npy", np_document_embeddings)
-    with open("./../data/name_parents.json", 'w', encoding='utf-8') as json_file:
-                js.dump(name_parents, json_file, ensure_ascii=False)
-else:
-    np_document_embeddings = np.load("./../data/np_document_embeddings.npy")
-    with open("./../data/name_parents.json", 'r', encoding='utf-8') as json_file:
-        name_parents = js.load(json_file)
-
-d = np_document_embeddings.shape[1]
-index = faiss.IndexFlatL2(d)
-index.add(np_document_embeddings)
-print("Finished!")
-
-print("Load objects...")
-objects = get_all_objects()
-print("Done!")
 
 class TextEmbedding:
     def __init__(self):
@@ -88,7 +28,6 @@ class TextEmbedding:
         with torch.no_grad():
             text_feature = self.model.encode_text(text_inputs)[0]
         return text_feature.detach().cpu().numpy()
-
 
 class FrameDoc(BaseDoc):
     embedding: NdArray[512]
@@ -133,54 +72,23 @@ class FrameDocs:
         Filtering using objects and keywords
     """
     def contains(
-        self, given_objects = None, keywords = None, search_mode=0
+        self, keywords = None
     ):
-        keywords = [kw.lower() for kw in keywords]
+       
         doc_list = self.doc_list.copy()
         
         # Filter by keyword in scripts
         if keywords:
-            if search_mode == 0:
-                # search with BERT
-                search_str = " ".join(keywords)
-                search_inputs = tokenizer(
-                    search_str, return_tensors="pt", padding=True, truncation=True
-                )
-                search_inputs = {
-                    key: value.to(device) for key, value in search_inputs.items()
-                }  # Chuyển dữ liệu lên GPU
-                with torch.no_grad():
-                    search_outputs = model(**search_inputs)
-                search_embedding = search_outputs.last_hidden_state.mean(dim=1)
-                search = search_embedding.cpu().numpy()
-                top_videos = []
-                D, I = index.search(search, 100)  # search
-                for i in I[0]:
-                    top_videos.append(name_parents[i][:-4])
-                top_videos = list(set(top_videos))
-                for i in range(len(doc_list) - 1, -1, -1):
-                    if doc_list[i].video_name not in top_videos:
-                        doc_list.pop(i)
-            else:
-                for i in range(len(doc_list) - 1, -1, -1):
-                    transcript_path = SCRIPT_PATH + doc_list[i].video_name + ".txt"
-                    try:
-                        with open(transcript_path, "r") as file:
-                            content = file.read()
-                            if not check_script(content, keywords):
-                                doc_list.pop(i)
-                    except FileNotFoundError:
-                        pass
-         # Filter by objects
-        if given_objects:
-            given_objects = check_exist_objects(objects=objects, given_objs=list(set(given_objects)))
-            if given_objects:
-                for i in range(len(doc_list) - 1, -1, -1):
-                    # print(given_objects)
-                    # print(doc_list[i].object_labels)
-                    if not given_objects.issubset(doc_list[i].object_labels):
-                        doc_list.pop(i)
-
+            keywords = [kw.lower() for kw in keywords]
+            for i in range(len(doc_list) - 1, -1, -1):
+                transcript_path = SCRIPT_PATH + doc_list[i].video_name + ".txt"
+                try:
+                    with open(transcript_path, "r") as file:
+                        content = file.read()
+                        if not check_script(content, keywords):
+                            doc_list.pop(i)
+                except FileNotFoundError:
+                    pass
         return FrameDocs(doc_list=doc_list)
 
     def predict(
@@ -212,10 +120,9 @@ class FrameDocs:
 
         display(HTML(create_html_script(img_docs)))
 
-
 def get_all_docs(npy_files) -> FrameDocs:
     doc_list = []
-    for feat_npy in npy_files:
+    for feat_npy in tqdm(iterable=npy_files, ascii=True, desc="Loading FrameDocs"):
         video_name = feat_npy[feat_npy.find("L") :].split(".")[0]
         feats_arr = np.load(os.path.join(feat_npy))
         # Load metadata
@@ -227,27 +134,21 @@ def get_all_docs(npy_files) -> FrameDocs:
                 usecols=["pts_time", "fps", "frame_idx"],
             )
             metadata = {key: metadata[key] for key in ["publish_date", "watch_url"]}
-            
             for frame_idx, feat in enumerate(feats_arr):
-                with open(os.path.join(OBJECT_PATH, video_name, f"{frame_idx + 1:04d}.json")) as f:
-                    data = js.load(f)
-                    
-                    image_path = os.path.join(
-                        KEYFRAME_PATH, video_name, f"{frame_idx + 1:04d}.jpg"
+                image_path = os.path.join(
+                    KEYFRAME_PATH, video_name, f"{frame_idx + 1:04d}.jpg"
+                )
+                actual_idx = map_kf["frame_idx"][frame_idx]
+                doc_list.append(
+                    FrameDoc(
+                        embedding=feat,
+                        video_name=video_name,
+                        image_path=image_path,
+                        keyframe_id=frame_idx + 1,
+                        actual_idx=actual_idx,
+                        actual_time=map_kf["pts_time"][frame_idx],
+                        fps=map_kf["fps"][frame_idx],
+                        metadata=metadata,
                     )
-                    actual_idx = map_kf["frame_idx"][frame_idx]
-                    doc_list.append(
-                        FrameDoc(
-                            embedding=feat,
-                            video_name=video_name,
-                            image_path=image_path,
-                            keyframe_id=frame_idx + 1,
-                            actual_idx=actual_idx,
-                            actual_time=map_kf["pts_time"][frame_idx],
-                            fps=map_kf["fps"][frame_idx],
-                            object_labels=set([int(label) for label in data["detection_class_labels"]]),
-                            metadata=metadata,
-                        )
-                    )
-
+                )
     return FrameDocs(doc_list)
