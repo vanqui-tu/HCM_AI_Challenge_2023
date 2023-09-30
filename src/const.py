@@ -1,5 +1,6 @@
 import torch
 MODEL = "ViT-B/32"
+# MODEL = "ViT-L/14@336px"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 METADATA_PATH = "../data/metadata/"
