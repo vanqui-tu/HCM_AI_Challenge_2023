@@ -114,56 +114,45 @@ const Index = () => {
                     </div>
 
                     <div className={cx("keyframe-grid")}>
-                        {keyframeRows.map((row, rowIndex) => (
-                            <div className={cx("keyframe-row")} key={rowIndex}>
-                                {row.map((keyframe, index) => (
-                                    <div className={cx("keyframe-cell")} key={index}>
-                                        <div className={cx("image-box")}>
-                                            <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
-                                            {allObjects ? (
-                                                <div className={cx("bounding-boxes")}>
-                                                    {keyframe["o"].map((box, boxIndex) => {
+                        {keyframes.map((keyframe, idx) => (
+                            <div className={cx("keyframe-container")} key={idx}>
+                                <div className={cx("image-box")}>
+                                    <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
+                                    <div className={cx("bounding-boxes")}>
+                                        {keyframe["o"].map((box, boxIndex) => {
+                                            let width = 400;
+                                            let height = 224;
+                                            // Image: 400 x 224
+                                            let ymin = box["b"][0] * height;
+                                            let xmin = box["b"][1] * width;
+                                            let ymax = box["b"][2] * height;
+                                            let xmax = box["b"][3] * width;
 
-                                                        let score = minScore / 100
-                                                        if (box["s"] >= score) {
-
-                                                            if (checkedIds.length == 0 || checkedIds.includes(box["i"])){
-                                                                // Image: 400 x 224
-                                                                let ymin = box["b"][0] * 224;
-                                                                let xmin = box["b"][1] * 400;
-                                                                let ymax = box["b"][2] * 224;
-                                                                let xmax = box["b"][3] * 400;
-
-                                                                return (
-                                                                    <div
-                                                                        className={cx("bounding-box")}
-                                                                        key={boxIndex}
-                                                                        style={{
-                                                                            left: xmin + 'px',
-                                                                            top: ymin + 'px',
-                                                                            width: (xmax - xmin) + 'px',
-                                                                            height: (ymax - ymin) + 'px',
-                                                                        }}
-                                                                    >{
-                                                                            console.log(box["box"])
-                                                                        }</div>
-                                                                )
-                                                            }
-                                                        }
-                                                    })}
-                                                </div>
-                                            ) : (<div></div>)}
-                                        </div>
-                                        <div className={cx("keyframe-cell-info")}>
-                                            <span>Keyframe: {keyframe["f"]}</span>
-                                            <span>Time: {keyframe["t"]}s</span>
-                                        </div>
-                                        <a href={`https://www.youtube.com/watch?v=${keyframe["l"]}`} target="_blank">Xem chi tiết</a>
+                                            return (
+                                                <div
+                                                    className={cx("bounding-box")}
+                                                    key={boxIndex}
+                                                    style={{
+                                                        left: xmin + 'px',
+                                                        top: ymin + 'px',
+                                                        width: (xmax - xmin) + 'px',
+                                                        height: (ymax - ymin) + 'px',
+                                                    }}
+                                                >{
+                                                        console.log(box["box"])
+                                                    }</div>
+                                            )
+                                        })}
                                     </div>
-                                ))}
+                                </div>
+                                <div className={cx("keyframe-info")}>
+                                    <span>Keyframe: {keyframe["f"]}</span>
+                                    <span>Time: {keyframe["t"]}s</span>
+                                </div>
+                                <a href={`/videos/${keyframe["l"]}?idx=${123123}&t=${keyframe["t"]}`} target="_blank">Xem chi tiết</a>
                             </div>
                         ))}
-                    </div>
+                    </div >
                 </div>
             )}
         </div>
