@@ -8,6 +8,7 @@ import pandas as pd
 from tqdm import tqdm
 import json
 
+
 def filter_by_detail_scripts(keyword=""):
     list_scripts = []
     list_file = os.listdir("../data/scripts/")
@@ -17,41 +18,49 @@ def filter_by_detail_scripts(keyword=""):
 
         times = []
         file_path = os.path.join("../data/scripts/", file)
-        with open(file_path, 'r', encoding='utf-8') as json_file:
-                data = js.load(json_file)
+        with open(file_path, "r", encoding="utf-8") as json_file:
+            data = js.load(json_file)
         json_file.close()
         for line in data:
             if keyword.strip() != "" and keyword.strip() in line["text"]:
-                start = str(int(line["start"]) // 60) + "'" + str(round(line["start"] - 60 * (int(line["start"]) // 60), 1)),
+                start = (
+                    str(int(line["start"]) // 60)
+                    + "'"
+                    + str(round(line["start"] - 60 * (int(line["start"]) // 60), 1)),
+                )
                 times.append(start)
-        
+
         # TODO Object có dạng
-        '''
+        """
             "link": 
             "path": 
             "video": 
             "frame": 
             "s": 
-        '''
+        """
         if len(times) != 0:
             with open("../data/metadata/" + file) as f:
                 metadata = js.load(f)
             f.close()
-            list_scripts.append({
-                "link": metadata["watch_url"].split("=")[1],
-                "path": metadata["thumbnail_url"],
-                "video": file[:-5],
-                "frame": "Không xác đinh",
-                "s": times
-            })
+            list_scripts.append(
+                {
+                    "link": metadata["watch_url"].split("=")[1],
+                    "path": metadata["thumbnail_url"],
+                    "video": file[:-5],
+                    "frame": "Không xác đinh",
+                    "s": times,
+                }
+            )
 
     return list_scripts
 
+
 def check_script(file_content, keywords):
     for keyword in keywords:
-        if (keyword not in file_content):
+        if keyword not in file_content:
             return False
     return True
+
 
 def remove_stopwords(doc, stopwords):
     words = doc.split()
@@ -67,11 +76,11 @@ def remove_stopwords(doc, stopwords):
 
 def separate_paragraphs(script, max_word=128):
     # Tách đoạn văn thành danh sách các từ
-    words = re.findall(r'\b\w+\b', script)
-    
+    words = re.findall(r"\b\w+\b", script)
+
     # Tính số lượng từ trong mỗi đoạn văn con
     n_child_script = len(words) // max_word
-    
+
     # Tạo danh sách các đoạn văn con
     child_scripts = []
     for i in range(n_child_script):
@@ -79,12 +88,13 @@ def separate_paragraphs(script, max_word=128):
         end = (i + 1) * max_word
         if i == n_child_script - 1:
             # Trường hợp cuối cùng, lấy tất cả từ còn lại
-            child_script = ' '.join(words[start:])
+            child_script = " ".join(words[start:])
         else:
-            child_script = ' '.join(words[start:end])
+            child_script = " ".join(words[start:end])
         child_scripts.append(child_script)
-    
+
     return child_scripts
+
 
 def get_all_scripts():
     # Get list stopword
@@ -106,6 +116,7 @@ def get_all_scripts():
 
     return list_file, all_scripts
 
+
 def format_keyframes():
     video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
     for name in video_names:
@@ -118,22 +129,28 @@ def format_keyframes():
             print(f"Change {old_path} to {changed_path}")
             os.rename(old_path, changed_path)
 
+
 def clean_dbs():
     DBs = [
         os.path.abspath(os.path.join(WORKSPACE, path)) for path in os.listdir(WORKSPACE)
     ]
-    
+
     for db in DBs:
         shutil.rmtree(db)
 
 
-def get_all_feats():
+def get_all_feats(feat=FEATURE_LARGE_PATH):
+    if feat == FEATURE_PATH:
+        print("Get features...")
+    elif feat == FEATURE_LARGE_PATH:
+        print("Get large feature")
     return [
-        os.path.join(FEATURE_PATH, file)
-        for file in os.listdir(FEATURE_PATH)
+        os.path.join(feat, file)
+        for file in os.listdir(feat)
         if file.endswith(".npy")
     ]
-    
+
+
 def reformat_keyframe():
     video_names = [name for name in os.listdir(KEYFRAME_PATH) if name != ".gitkeep"]
     for name in video_names:
@@ -141,11 +158,14 @@ def reformat_keyframe():
         for kf in keyframes:
             img_name = kf.split(".")[0]
             if len(img_name) != LEN_OF_KEYFRAME_NAME:
-                changed_path = os.path.join(KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg")
+                changed_path = os.path.join(
+                    KEYFRAME_PATH, name, img_name.zfill(4) + ".jpg"
+                )
                 old_path = os.path.join(KEYFRAME_PATH, name, kf)
                 print(f"Change {old_path} to {changed_path}")
                 os.rename(old_path, changed_path)
-            
+
+
 def reformat_object():
     video_names = [name for name in os.listdir(OBJECT_PATH) if name != ".gitkeep"]
     for name in video_names:
@@ -153,10 +173,13 @@ def reformat_object():
         for obj in objs:
             img_name = obj.split(".")[0]
             if len(img_name) != LEN_OF_KEYFRAME_NAME:
-                changed_path = os.path.join(OBJECT_PATH, name, img_name.zfill(4) + ".json")
+                changed_path = os.path.join(
+                    OBJECT_PATH, name, img_name.zfill(4) + ".json"
+                )
                 old_path = os.path.join(OBJECT_PATH, name, obj)
                 print(f"Change {old_path} to {changed_path}")
                 os.rename(old_path, changed_path)
+
 
 def create_html_script(images):
     styles = """
@@ -231,40 +254,51 @@ def create_html_script(images):
 
     return html_script
 
+
 def load_all_objects():
-    paths = [os.path.join(OBJECT_PATH, name) for name in os.listdir(OBJECT_PATH) if "gitkeep" not in name]
-    storage = {
-        "label": [],
-        "entity": []
-    }
+    paths = [
+        os.path.join(OBJECT_PATH, name)
+        for name in os.listdir(OBJECT_PATH)
+        if "gitkeep" not in name
+    ]
+    storage = {"label": [], "entity": []}
     for path in tqdm(paths):
         objects_paths = [os.path.join(path, name) for name in os.listdir(path)]
         for objects_path in tqdm(objects_paths):
             with open(file=objects_path, mode="r") as f:
                 datas = json.load(f)
-                for i, label in enumerate(datas["detection_class_labels"]):   
+                for i, label in enumerate(datas["detection_class_labels"]):
                     if label not in storage["label"]:
                         storage["label"].append(label)
                         storage["entity"].append(datas["detection_class_entities"][i])
-                    elif datas["detection_class_entities"][i] != storage["entity"][storage["label"].index(label)]:
+                    elif (
+                        datas["detection_class_entities"][i]
+                        != storage["entity"][storage["label"].index(label)]
+                    ):
                         print(datas["detection_class_entities"][i])
                         print(storage["entity"][storage["label"].index(label)])
                         print("Something wrong with labels id...")
                         return
-    storage["entity"] = [entity.lower() for entity in storage["entity"] ]
+    storage["entity"] = [entity.lower() for entity in storage["entity"]]
     pd.DataFrame(storage).to_csv("object_labels.csv", index=False)
-    
+
+
 def get_all_objects():
     objs = pd.read_csv("object_labels.csv", index_col=0).to_dict()
     # objs["entity"] = [item for item in objs["entity"]]
-    
-    return {"label": list(objs["entity"].keys()), "entity": list(objs["entity"].values())}
+
+    return {
+        "label": list(objs["entity"].keys()),
+        "entity": list(objs["entity"].values()),
+    }
+
 
 def check_exist_object(objects: dict, given_obj: str) -> int:
     if given_obj in objects["entity"]:
         return objects["label"][objects["entity"].index(given_obj)]
     print(f"Object {given_obj} not exists")
     return -1
+
 
 def check_exist_objects(objects: dict, given_objs: list):
     idxs = []
@@ -275,6 +309,6 @@ def check_exist_objects(objects: dict, given_objs: list):
         idxs.append(idx)
     return set(idxs)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     pass
-    
