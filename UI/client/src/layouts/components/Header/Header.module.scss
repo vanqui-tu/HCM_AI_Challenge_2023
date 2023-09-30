@@ -1,0 +1,37 @@
+/* Header.css */
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  border-bottom: 3px solid #9f9f9f;
+  padding: 10px 50px;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  z-index: 10;
+}
+
+.left-content {
+  display: flex;
+  align-items: center;
+}
+
+.left-content img {
+  width: 200px; /* Adjust the width as needed */
+  margin-right: 10px;
+}
+
+span {
+  line-height: 100%;
+  font-size: 30px;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.right-content {
+  font-weight: bold;
+}
