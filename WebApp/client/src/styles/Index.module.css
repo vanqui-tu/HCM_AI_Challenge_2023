@@ -1,17 +1,22 @@
-
-.main {
-  width: 100%;
-  min-height: 500px;
-  padding: 10px 20px;
-  display: flex; 
-}
-
-.content {
-  flex: 1;
-}
-
 .container {
-  padding-top: 70px;
+  padding-top: 80px;
+  display: flex;
+}
+
+.sidebar{
+  width: 200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid #757575;
+  padding: 0 5px 5px 0;
+
+  position: fixed;
+  top: 80px;
+  left: 20px;
+}
+
+.main-box{
   padding-left: 200px;
 }
 
@@ -25,21 +30,27 @@
   position: relative;
 }
 .keyframe-cell img {
-  max-width: 100%;
+  width: 400px;
+  height: 224px;
   height: auto;
   cursor: pointer;
   position: relative;
 }
 
-.bounding-boxes {
+.image-box {
   position: relative;
+  display: inline-block;
+}
+
+.bounding-boxes {
   z-index: 2;
 }
 
 .bounding-box {
   position: absolute;
-  border: 2px solid red; /* Change the color and style as needed */
-  pointer-events: none; /* Prevent bounding boxes from blocking interactions with images */
+  border: 2px solid #ff5733;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
 .keyframe-cell a {
@@ -101,4 +112,43 @@
 
 .search-box .search-btn .fas {
   color: #5cbdbb;
+}
+
+.detail-objects{
+  list-style: none;
+  max-height: 500px;
+  overflow-y: scroll;
+}
+
+.detail-object{
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding-bottom: 10px;
+}
+
+.detail-object p{
+  padding-left: 10px;
+}
+
+.checkbox{
+  display: flex;
+  align-items: center;
+  justify-content: left;
+
+  font-size: 14px;
+
+  border-bottom: 2px solid #000;
+  margin-bottom: 5px;
+}
+
+.checkbox input{
+  margin-right: 10px;
+}
+
+.score-box{ 
+  border-bottom: 2px solid #000;
+  margin-bottom: 5px;
 }

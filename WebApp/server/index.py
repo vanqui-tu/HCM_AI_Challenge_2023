@@ -1,24 +1,37 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Import CORS from flask_cors
 import json
+import csv
 
 app = Flask(__name__)
 CORS(app)  # Add this line to enable CORS for your Flask app
 
+app.static_url_path = '/static'  # This sets the URL path for the static files
+app.static_folder = 'keyframes' 
+
 with open("../../data/detail_keyframes.json", "r") as json_file:
     detail_keyframes = json.load(json_file)
 
-@app.route('/example', methods=['GET'])
+objects = []
+with open(f"./object_labels.csv", 'r', newline="") as file:
+    csv_reader = csv.reader(file)
+    next(csv_reader, None)
+
+    for row in csv_reader:
+        objects.append(row)
+
+@app.route('/initial', methods=['GET'])
 def example():
     try:
         # Your processing logic goes here
         # For demonstration purposes, let's just echo the received data
-        result = {"message": "successful", "data": detail_keyframes[:7]}
+        result = {"message": "successful", "detail_keyframes": detail_keyframes[:100], "objects": objects}
 
         # Return a JSON response
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 @app.route('/search', methods=['POST'])
 def search():
