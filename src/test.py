@@ -20,6 +20,11 @@ def get_detail_frames():
                 map_keyframe.append(row)
         file.close()
 
+        # TODO: Get link video
+        with open(f"./../data/metadata/{folder}.json", 'r') as file:
+            metadata = json.load(file)
+        file.close()  
+
         folder_path = os.path.join("./../data/keyframes", folder)
         list_keyframes = os.listdir(folder_path)
 
@@ -42,26 +47,24 @@ def get_detail_frames():
                 if float(score) < 0.4:
                     continue
                 objects.append({
-                    "score": score,
-                    "class_id": detection_class_labels[i],
-                    "class_name": detection_class_entities[i],
-                    "box": detection_boxes[i],
+                    "s": score,                         # score
+                    "i": detection_class_labels[i],     # id class
+                    "n": detection_class_entities[i],   # name class
+                    "b": detection_boxes[i],            # bbox
                 })    
 
             obj_frame = {
-                "file_path": frame_path,
-                "frame_id": frame[:-4],
-                "time": map_keyframe[idx][1],
-                "frame": map_keyframe[idx][3],
-                "objects": objects
-            }
+                "l": metadata["watch_url"].split("=")[1],   # link video
+                "v": folder,                                # video
+                "i": frame[:-4],                            # id frame
+                "t": map_keyframe[idx][1],                  # time
+                "f": map_keyframe[idx][3],                  # frame matched
+                "o": objects                                # objects
+            }   
             list_dataset.append(obj_frame)
     
-    with open("./test.json", "w") as json_file:
+    with open("../data/test.json", "w") as json_file:
         json.dump(list_dataset, json_file)
 
 if __name__ == "__main__":
-    with open("./test.json", "r") as json_file:
-        dataset_dict = json.load(json_file)
-
-    print(dataset_dict[0])
+    get_detail_frames()
