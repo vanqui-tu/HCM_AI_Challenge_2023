@@ -41,7 +41,7 @@ const Index = () => {
     };
 
     // Group the filtered images into rows
-    const keyframeRows = groupKeyframesIntoRows(keyframes);
+    // const keyframeRows = groupKeyframesIntoRows(keyframes);
 
     return (
         <div className={cx("container")}>
@@ -56,12 +56,53 @@ const Index = () => {
                         </a>
                     </div>
                     <div className={cx("keyframe-grid")}>
+                        {keyframes.map((keyframe, idx) => (
+                            <div className={cx("keyframe-container")} key={idx}>
+                                <div className={cx("image-box")}>
+                                    <img src={'/0001.jpg'} alt="My Image" />
+                                    <div className={cx("bounding-boxes")}>
+                                        {keyframe["o"].map((box, boxIndex) => {
+                                            let width = 400;
+                                            let height = 224;
+                                            // Image: 400 x 224
+                                            let ymin = box["b"][0] * height;
+                                            let xmin = box["b"][1] * width;
+                                            let ymax = box["b"][2] * height;
+                                            let xmax = box["b"][3] * width;
+
+                                            return (
+                                                <div
+                                                    className={cx("bounding-box")}
+                                                    key={boxIndex}
+                                                    style={{
+                                                        left: xmin + 'px',
+                                                        top: ymin + 'px',
+                                                        width: (xmax - xmin) + 'px',
+                                                        height: (ymax - ymin) + 'px',
+                                                    }}
+                                                >{
+                                                        console.log(box["box"])
+                                                    }</div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className={cx("keyframe-info")}>
+                                    <span>Keyframe: {keyframe["f"]}</span>
+                                    <span>Time: {keyframe["t"]}s</span>
+                                </div>
+                                <a href={`/videos/${keyframe["l"]}?idx=${123123}&t=${keyframe["t"]}`} target="_blank">Xem chi tiết</a>
+                            </div>
+                        ))}
+                    </div >
+
+                    {/* <div className={cx("keyframe-grid")}>
                         {keyframeRows.map((row, rowIndex) => (
                             <div className={cx("keyframe-row")} key={rowIndex}>
                                 {row.map((keyframe, index) => (
                                     <div className={cx("keyframe-cell")} key={index}>
                                         <div className={cx("image-box")}>
-                                            <img src={'./../../../../data/keyframes/L01_V001/0001.jpg'} alt="My Image" />
+                                            <img src={'/0001.jpg'} alt="My Image" />
                                             <div className={cx("bounding-boxes")}>
                                                 {keyframe["o"].map((box, boxIndex) => {
                                                     // Image: 400 x 224
@@ -96,7 +137,7 @@ const Index = () => {
                                 ))}
                             </div>
                         ))}
-                    </div>
+                    </div> */}
                 </div>
             )}
         </div>
