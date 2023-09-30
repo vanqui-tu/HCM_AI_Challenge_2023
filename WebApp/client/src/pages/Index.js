@@ -112,6 +112,7 @@ const Index = () => {
                             </svg>
                         </a>
                     </div>
+
                     <div className={cx("keyframe-grid")}>
                         {keyframeRows.map((row, rowIndex) => (
                             <div className={cx("keyframe-row")} key={rowIndex}>

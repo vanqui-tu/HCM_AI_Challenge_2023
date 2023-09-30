@@ -25,16 +25,28 @@
   justify-content: space-around;
   padding: 5px 0;
 }
+.keyframe-grid{
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
 
-.keyframe-cell {
+.keyframe-container {
   position: relative;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-box{
+  position: relative;
+  width: 400px;
+  height: 224px;
 }
 .keyframe-cell img {
   width: 400px;
   height: 224px;
   height: auto;
   cursor: pointer;
-  position: relative;
 }
 
 .image-box {
@@ -53,7 +65,7 @@
   z-index: 1;
 }
 
-.keyframe-cell a {
+.keyframe-container a {
   display: none;
   position: absolute;
   top: 0;
@@ -69,19 +81,20 @@
   color: white;
 }
 
-.keyframe-cell:hover a {
+.keyframe-container:hover a {
   display: flex;
 }
 
-.keyframe-cell-info {
+.keyframe-info {
   display: flex;
   align-items: center;
 }
 
-.keyframe-cell-info span {
+.keyframe-info span {
   font-size: 14px;
   margin-right: 20px;
 }
+
 
 .search-box {
   width: 100%;
