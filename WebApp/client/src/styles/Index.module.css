@@ -87,6 +87,8 @@
   left: 0;
   bottom: 0;
   right: 0;
+  width: 400px;
+  height: 265px;
   background-color: rgba(0, 0, 0, 0.4);
   text-align: center;
   font-size: 12px;
@@ -94,10 +96,12 @@
   align-items: center;
   text-decoration: none;
   color: white;
+  
 }
 
 .keyframe-container:hover a {
   display: flex;
+  z-index: 10000;
 }
 
 .keyframe-info {
