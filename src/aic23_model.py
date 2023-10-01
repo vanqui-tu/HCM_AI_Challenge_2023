@@ -67,5 +67,28 @@ class AIC23_Model:
         frameDocs.visualize()
         return frameDocs
     
+    def search_in_sequence_and_visualize(self, query_text_1: str, query_text_2: str, strict_order=False, audio_texts=None, topk=1000) -> FrameDocs:
+        frameDocs_1 = self.search(query_text=query_text_1, audio_texts=audio_texts, topk=topk)
+        frameDocs_2 = self.search(query_text=query_text_2, audio_texts=audio_texts, topk=topk)
+
+        results = []
+        for idx1, frame1 in enumerate(frameDocs_1.doc_list):
+            for idx2, frame2 in enumerate(frameDocs_2.doc_list):
+                if (frame1.video_name == frame2.video_name and abs(frame1.actual_time - frame2.actual_time) < 20.0):
+                    if (frame1.actual_time < frame2.actual_time):
+                        results.append((idx1 + idx2, frame1, frame2))
+                    elif (strict_order == False):
+                        results.append((idx1 + idx2, frame2, frame1))
+        results.sort(key=lambda a: a[0])
+
+        results_ = []
+        for res in results:
+            results_.append(res[1])
+            results_.append(res[2])
+        frameDocs = FrameDocs(results_)
+
+        frameDocs.visualize()
+        return frameDocs
+    
 model = AIC23_Model()
 print("Loading model: Done!")
