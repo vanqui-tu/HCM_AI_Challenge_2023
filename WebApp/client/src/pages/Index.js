@@ -1,7 +1,7 @@
 import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
-import Papa from "papaparse";
+// import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
 // import img_0007 from '';

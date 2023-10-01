@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  color: white;
 }
 
 html {
@@ -22,4 +23,5 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #18191a;
 }
