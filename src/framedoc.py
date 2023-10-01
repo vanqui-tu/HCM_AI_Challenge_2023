@@ -104,6 +104,17 @@ class FrameDocs:
                 )
                 f.write(row_text)
 
+    def to_json(self):
+        json_frame = [
+            {
+                "video": doc.video_name,
+                "frame": doc.actual_idx,
+            }
+            for doc in self.doc_list
+        ]
+
+        return json_frame
+
     def visualize(self):
         img_docs = [
             {

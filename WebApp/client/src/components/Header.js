@@ -10,7 +10,7 @@ function Header() {
         <div className={cx("header")}>
             <div className={cx("left-content")}>
                 <Link to="/">
-                    <img src="https://www.fit.hcmus.edu.vn/assets/img/logos/fit-logo.png" alt="AIC Logo" />
+                    <img src="https://www.fit.hcmus.edu.vn/assets/img/logos/fit-logo-white.png" alt="AIC Logo" />
                 </Link>
                 <span>AIC 2023</span>
             </div>

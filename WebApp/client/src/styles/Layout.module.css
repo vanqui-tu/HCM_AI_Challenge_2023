@@ -24,4 +24,5 @@ body {
   flex-direction: column;
   align-items: center;
   background-color: #18191a;
+  min-height: 900px;
 }

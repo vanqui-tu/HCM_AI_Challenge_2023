@@ -32,6 +32,32 @@ const Index = () => {
     const [keyframes, setDetailKeyframes] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const handleFormSubmit = async (e) => {
+        e.preventDefault(); // Prevent the default form submission behavior
+        // Add your custom logic here for handling the form submission
+        console.log('Form submitted with searchQuery:', searchQuery);
+        searchQuery = searchQuery.trim()
+        try {
+            const response = await fetch('http://localhost:5000/search', {
+                method: 'POST', // or 'GET' depending on your server's API
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ searchQuery }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data)
+                // setSearchResults(data); // Update state with the server's response
+            } else {
+                console.error('Server error:', response.status, response.statusText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
     // Load the JSON data (images) from your file
     useEffect(() => {
         // Define the API endpoint you want to call
@@ -45,7 +71,6 @@ const Index = () => {
                 setDetailKeyframes(data.detail_keyframes)
                 setDetailObjects(data.objects)
                 setFilterObjects(data.objects)
-                console.log(data.objects)
                 setLoading(false);
             })
             .catch((error) => {
@@ -111,14 +136,14 @@ const Index = () => {
             </div>
             {loading ? (<p>Is Loading</p>) : (
                 <div className={cx("main-box")}>
-                    <div className={cx("search-box")}>
-                        <input type="text" name="search" placeholder="Search..." className={cx("search-input")} />
-                        <a className={cx("search-icon")}>
+                    <form className={cx("search-box")} onSubmit={handleFormSubmit}>
+                        <input type="text" name="search" placeholder="Search..." className={cx("search-input")} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                        <a className={cx("search-icon")} onClick={handleFormSubmit}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
                             </svg>
                         </a>
-                    </div>
+                    </form>
 
                     <div className={cx("keyframe-grid")}>
                         {keyframes.map((keyframe, idx) => (
@@ -126,33 +151,43 @@ const Index = () => {
                                 <div className={cx("image-box")}>
                                     <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
                                     <div className={cx("bounding-boxes")}>
-                                        {keyframe["o"].map((box, boxIndex) => {
-                                            let width = 400;
-                                            let height = 224;
-                                            // Image: 400 x 224
-                                            let ymin = box["b"][0] * height;
-                                            let xmin = box["b"][1] * width;
-                                            let ymax = box["b"][2] * height;
-                                            let xmax = box["b"][3] * width;
+                                        {allObjects ? (
+                                            <div className={cx("bounding-boxes")}>
+                                                {keyframe["o"].map((box, boxIndex) => {
 
-                                            return (
-                                                <div
-                                                    className={cx("bounding-box")}
-                                                    key={boxIndex}
-                                                    style={{
-                                                        left: xmin + 'px',
-                                                        top: ymin + 'px',
-                                                        width: (xmax - xmin) + 'px',
-                                                        height: (ymax - ymin) + 'px',
-                                                    }}
-                                                >{
-                                                        console.log(box["box"])
-                                                    }</div>
-                                            )
-                                        })}
+                                                    let score = minScore / 100
+                                                    if (box["s"] >= score) {
+
+                                                        if (checkedIds.length == 0 || checkedIds.includes(box["i"])) {
+                                                            // Image: 400 x 224
+                                                            let ymin = box["b"][0] * 224;
+                                                            let xmin = box["b"][1] * 400;
+                                                            let ymax = box["b"][2] * 224;
+                                                            let xmax = box["b"][3] * 400;
+
+                                                            return (
+                                                                <div
+                                                                    className={cx("bounding-box")}
+                                                                    key={boxIndex}
+                                                                    style={{
+                                                                        left: xmin + 'px',
+                                                                        top: ymin + 'px',
+                                                                        width: (xmax - xmin) + 'px',
+                                                                        height: (ymax - ymin) + 'px',
+                                                                    }}
+                                                                >{
+                                                                        console.log(box["box"])
+                                                                    }</div>
+                                                            )
+                                                        }
+                                                    }
+                                                })}
+                                            </div>
+                                        ) : (<div></div>)}
                                     </div>
                                 </div>
                                 <div className={cx("keyframe-info")}>
+                                    <span>Video: {keyframe["v"]}</span>
                                     <span>Keyframe: {keyframe["f"]}</span>
                                     <span>Time: {keyframe["t"]}s</span>
                                 </div>

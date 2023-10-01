@@ -19,7 +19,7 @@
 }
 
 .main-box {
-  padding-left: 200px;
+  padding-left: 260px;
 }
 
 .keyframe-grid {
@@ -117,7 +117,7 @@
 }
 
 .keyframe-info span {
-  font-size: 14px;
+  font-size: 12px;
   margin-right: 20px;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .search-box:focus-within > .search-input {
-  border-bottom: 2px solid #000;
+  border-bottom: 2px solid #ffffff;
 }
 
 .search-box .search-input {
@@ -220,7 +220,7 @@
   border-bottom: 2px solid #000;
   margin-bottom: 5px;
   width: 100%;
-  height: ;
+  height: 40px;
 }
 
 /* width */

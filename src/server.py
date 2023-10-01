@@ -7,13 +7,18 @@ app = Flask(__name__)
 CORS(app)  # Add this line to enable CORS for your Flask app
 
 app.static_url_path = '/static'  # This sets the URL path for the static files
-app.static_folder = 'keyframes' 
+app.static_folder = '../data/keyframes' 
 
-with open("../../data/detail_keyframes.json", "r") as json_file:
+print("### | Initial model...")
+from aic23_model import model
+
+print("### | Get detail keyframes...")
+with open("../data/detail_keyframes.json", "r") as json_file:
     detail_keyframes = json.load(json_file)
 
+print("### | Get all objects...")
 objects = []
-with open(f"./object_labels.csv", 'r', newline="") as file:
+with open(f"../data/object_labels.csv", 'r', newline="") as file:
     csv_reader = csv.reader(file)
     next(csv_reader, None)
 
@@ -21,7 +26,7 @@ with open(f"./object_labels.csv", 'r', newline="") as file:
         objects.append(row)
 
 @app.route('/initial', methods=['GET'])
-def example():
+def initial():
     try:
         # Your processing logic goes here
         # For demonstration purposes, let's just echo the received data
@@ -38,11 +43,18 @@ def search():
     try:
         # Get the JSON data from the client's request
         data = request.json
-        print("Message: ",data)
+        query = data["searchQuery"]
+        results = model.search(
+            query_text=query,
+            audio_texts=[],
+            topk=200,
+        ) 
+
+        print(results.to_json())
 
         # Your processing logic goes here
         # For demonstration purposes, let's just echo the received data
-        result = {"message": "Received data successfully", "data": data}
+        result = {"message": "Received data successfully", "data": results.to_json()}
 
         # Return a JSON response
         return jsonify(result), 200
@@ -50,4 +62,5 @@ def search():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    print("<<<<<< SERVER RUN | http://localhost:5000 >>>>>>")
+    app.run(debug=True, port=5000)
