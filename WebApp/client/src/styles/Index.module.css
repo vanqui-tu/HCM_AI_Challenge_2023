@@ -152,6 +152,23 @@
   color: #5cbdbb;
 }
 
+.object-container{
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+}
+
+.object-container input {
+  border: none;
+  padding: 5px 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  color:#3a3b3c;
+  font-weight: 600;
+}
+.object-container input:focus{
+  outline: none;
+}
 .detail-objects {
   list-style: none;
   max-height: 500px;
@@ -165,12 +182,25 @@
   align-items: center;
   justify-content: left;
   padding-bottom: 10px;
+
 }
 
-.detail-object p {
-  padding-left: 10px;
+.detail-object input{
+  margin: 0;
+}
+.detail-object label {
+  margin-left: 10px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+.detail-object > label >div:first-child {
+  flex: 0.2;
 }
 
+.detail-object > label > div:last-child {
+  flex: 0.8;
+}
 .checkbox {
   display: flex;
   align-items: center;
@@ -189,6 +219,8 @@
 .score-box {
   border-bottom: 2px solid #000;
   margin-bottom: 5px;
+  width: 100%;
+  height: ;
 }
 
 /* width */

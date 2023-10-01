@@ -9,6 +9,7 @@ const cx = classNames.bind(styles);
 const Index = () => {
     const [allObjects, setAllObjects] = useState(false);
     const [detailObjects, setDetailObjects] = useState([]);
+    const [filterObjects, setFilterObjects] = useState([])
     const [checkedIds, setCheckedIds] = useState([]);
     const [minScore, setMinScore] = useState(40);
     const handleCheckboxChange = (id) => {
@@ -43,6 +44,7 @@ const Index = () => {
                 // Assuming the API response contains an array of image URLs
                 setDetailKeyframes(data.detail_keyframes)
                 setDetailObjects(data.objects)
+                setFilterObjects(data.objects)
                 console.log(data.objects)
                 setLoading(false);
             })
@@ -51,24 +53,15 @@ const Index = () => {
                 setLoading(false);
             });
     }, []);
+    useEffect(() => {
 
-    // Filter images based on the search query
-    const groupKeyframesIntoRows = (keyframes) => {
-        const rows = [];
-        for (let i = 0; i < keyframes.length; i += 3) {
-            rows.push(keyframes.slice(i, i + 3));
-        }
-        return rows;
-    };
-
-    // Group the filtered images into rows
-    const keyframeRows = groupKeyframesIntoRows(keyframes);
-
+    }, [filterObjects, setFilterObjects])
     return (
         <div className={cx("container")}>
             <div className={cx("sidebar")}>
-                <label className={cx("checkbox")}>
+                <label className={cx("checkbox")} for="allObjects">
                     <input
+                        id="allObjects"
                         type="checkbox"
                         checked={allObjects}
                         onChange={() => setAllObjects(!allObjects)}
@@ -88,19 +81,33 @@ const Index = () => {
                         Score: {minScore / 100}
                     </p>
                 </label>
-                <ul className={cx("detail-objects")}>
-                    {detailObjects.map((item) => (
-                        <li key={item.id} className={cx("detail-object")}>
-                            <input
-                                type="checkbox"
-                                checked={checkedIds.includes(item[0])}
-                                onChange={() => handleCheckboxChange(item[0])}
-                            />
-                            <p>{item[0]}</p>
-                            <p>{item[1]}</p>
-                        </li>
-                    ))}
-                </ul>
+                <div className={cx('object-container')}>
+                    <input type="text" placeholder='Search object...' onChange={(event) => {
+                        console.log(event.target.value)
+
+                        setFilterObjects(detailObjects.filter((value) => {
+                            return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
+                        }))
+                    }} />
+                    <ul className={cx("detail-objects")}>
+
+                        {filterObjects.map((item, idx) => (
+                            <li key={item.id} className={cx("detail-object")}>
+                                <input
+                                    type="checkbox"
+                                    checked={checkedIds.includes(item[0])}
+                                    name={idx}
+                                    id={idx}
+                                    onChange={() => handleCheckboxChange(item[0])}
+                                />
+                                <label for={idx}>
+                                    <div>{item[0]}</div>
+                                    <div>{item[1]}</div>
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
             {loading ? (<p>Is Loading</p>) : (
                 <div className={cx("main-box")}>
@@ -149,7 +156,7 @@ const Index = () => {
                                     <span>Keyframe: {keyframe["f"]}</span>
                                     <span>Time: {keyframe["t"]}s</span>
                                 </div>
-                                <a href={`/videos/${keyframe["l"]}?idx=${123123}&t=${keyframe["t"]}`} target="_blank">Xem chi tiết</a>
+                                <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
                             </div>
                         ))}
                     </div >
