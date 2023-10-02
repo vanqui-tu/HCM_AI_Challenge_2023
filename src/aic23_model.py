@@ -1,13 +1,14 @@
 from utils import clean_dbs, get_all_feats
 from vector_database import TextEmbedding, VectorDB
-from framedoc import FrameDoc, FrameDocs, get_all_docs
+from framedoc import FrameDoc, FrameDocs, get_all_docs, get_all_docs_v2
 from docarray import DocList
 from const import *
 
 print("Loading model...")
 clean_dbs()
 all_feat_files = get_all_feats(feat=FEATURE_PATH)
-doc_list = get_all_docs(all_feat_files)
+# doc_list = get_all_docs(all_feat_files)
+doc_list = get_all_docs_v2()
 print("Done...")
 
 

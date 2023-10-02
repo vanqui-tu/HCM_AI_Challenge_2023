@@ -1,64 +1,23 @@
 import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
+import io from 'socket.io-client';
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
 // import img_0007 from '';
 
 const Index = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [keyframes, setDetailKeyframes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [allObjects, setAllObjects] = useState(false);
     const [detailObjects, setDetailObjects] = useState([]);
     const [filterObjects, setFilterObjects] = useState([])
     const [checkedIds, setCheckedIds] = useState([]);
     const [minScore, setMinScore] = useState(40);
-    const handleCheckboxChange = (id) => {
-        if (checkedIds.includes(id)) {
-            // If the ID is already in the checkedIds array, remove it
-            setCheckedIds(checkedIds.filter((checkedId) => checkedId !== id));
-        } else {
-            // If the ID is not in the checkedIds array, add it
-            setCheckedIds([...checkedIds, id]);
-        }
-    };
-    const handleRangeChange = (e) => {
-        // Update the range values in the state
-        if (e.target.value >= 40) {
-            setMinScore(e.target.value);
-        }
-    };
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [keyframes, setDetailKeyframes] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault(); // Prevent the default form submission behavior
-        // Add your custom logic here for handling the form submission
-        console.log('Form submitted with searchQuery:', searchQuery);
-        searchQuery = searchQuery.trim()
-        try {
-            const response = await fetch('http://localhost:5000/search', {
-                method: 'POST', // or 'GET' depending on your server's API
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ searchQuery }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data)
-                // setSearchResults(data); // Update state with the server's response
-            } else {
-                console.error('Server error:', response.status, response.statusText);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-    // Load the JSON data (images) from your file
+    // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
         // Define the API endpoint you want to call
         const apiUrl = 'http://127.0.0.1:5000/initial'; // Replace with your API endpoint
@@ -78,9 +37,63 @@ const Index = () => {
                 setLoading(false);
             });
     }, []);
+
+    // TODO: Tạo 1 connect qua giao thức socket
+    useEffect(() => {
+        const socket = io('http://localhost:5000');
+        socket.on('connect', () => {
+            console.log("Connected to server");
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
+    const handleCheckboxChange = (id) => {
+        if (checkedIds.includes(id)) {
+            // If the ID is already in the checkedIds array, remove it
+            setCheckedIds(checkedIds.filter((checkedId) => checkedId !== id));
+        } else {
+            // If the ID is not in the checkedIds array, add it
+            setCheckedIds([...checkedIds, id]);
+        }
+    };
+    const handleRangeChange = (e) => {
+        // Update the range values in the state
+        if (e.target.value >= 40) {
+            setMinScore(e.target.value);
+        }
+    };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        console.log('Form submitted with searchQuery:', searchQuery);
+        try {
+            const socket = io('http://localhost:5000');
+            socket.emit('search', { searchQuery });
+
+            socket.on('search_result', (data) => {
+                setDetailKeyframes(data.data)
+                setLoading(false);
+            });
+
+            socket.on('search_error', (error) => {
+                console.error('Server error:', error);
+                setLoading(false);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+
     useEffect(() => {
 
     }, [filterObjects, setFilterObjects])
+
     return (
         <div className={cx("container")}>
             <div className={cx("sidebar")}>
@@ -175,9 +188,7 @@ const Index = () => {
                                                                         width: (xmax - xmin) + 'px',
                                                                         height: (ymax - ymin) + 'px',
                                                                     }}
-                                                                >{
-                                                                        console.log(box["box"])
-                                                                    }</div>
+                                                                ></div>
                                                             )
                                                         }
                                                     }

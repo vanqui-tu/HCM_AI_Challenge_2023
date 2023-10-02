@@ -10,7 +10,7 @@ app.static_url_path = '/static'  # This sets the URL path for the static files
 app.static_folder = '../data/keyframes' 
 
 print("### | Initial model...")
-from aic23_model import model
+# from aic23_model import model
 
 print("### | Get detail keyframes...")
 with open("../data/detail_keyframes.json", "r") as json_file:
@@ -43,13 +43,15 @@ def search():
     try:
         # Get the JSON data from the client's request
         data = request.json
-        query = data["searchQuery"]
+        query = data["searchQuery"].strip()
+
+        print(query)
+        
         results = model.search(
             query_text=query,
             audio_texts=[],
             topk=200,
         ) 
-
         print(results.to_json())
 
         # Your processing logic goes here
@@ -63,4 +65,4 @@ def search():
 
 if __name__ == '__main__':
     print("<<<<<< SERVER RUN | http://localhost:5000 >>>>>>")
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

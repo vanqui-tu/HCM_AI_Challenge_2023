@@ -2,6 +2,7 @@ import os
 import json
 import csv
 from tqdm import tqdm
+import numpy as np
 
 def get_detail_frames():
     list_dataset = []
@@ -67,4 +68,3 @@ def get_detail_frames():
         json.dump(list_dataset, json_file)
 
 if __name__ == "__main__":
-    get_detail_frames()
