@@ -14,4 +14,5 @@ OBJECT_PATH = "../data/objects/"
 
 WORKSPACE = "./vectordb"
 ROOT_DB = "root"
+TEMP_DB = "temp"
 LEN_OF_KEYFRAME_NAME = 4

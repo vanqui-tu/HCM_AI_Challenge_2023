@@ -138,7 +138,7 @@ def get_all_docs(npy_files) -> FrameDocs:
         feats_arr = np.load(os.path.join(feat_npy))
         # Load metadata
         metadata = {}
-        with open(os.path.join(METADATA_PATH, video_name + ".json")) as meta_f:
+        with open(os.path.join(METADATA_PATH, video_name + ".json"), encoding="utf-8") as meta_f:
             metadata = js.load(meta_f)
             map_kf = pd.read_csv(
                 os.path.join(MAP_KEYFRAMES, video_name + ".csv"),
