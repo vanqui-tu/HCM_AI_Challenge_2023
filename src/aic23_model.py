@@ -6,7 +6,7 @@ from const import *
 
 print("Loading model...")
 clean_dbs()
-all_feat_files = get_all_feats(feat=FEATURE_PATH)
+# all_feat_files = get_all_feats(feat=FEATURE_PATH)
 # doc_list = get_all_docs(all_feat_files)
 doc_list = get_all_docs_v2()
 print("Done...")

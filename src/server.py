@@ -68,7 +68,7 @@ def search(message):
                 audio_texts=audioQueries,
                 topk=100,
             ) 
-        print(results.to_json())
+        # print(results.to_json())
         # print(results.to_json())
 
         emit('search_result', {"data": results.to_json()}, broadcast=False)
