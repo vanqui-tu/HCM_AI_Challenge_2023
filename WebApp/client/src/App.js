@@ -1,7 +1,7 @@
 import Layout from "./pages/Layout"
 import Index from "./pages/Index"
 import VideoDetails from "./pages/VideoDetails";
-
+import React from 'react';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {

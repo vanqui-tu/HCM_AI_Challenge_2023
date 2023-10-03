@@ -2,11 +2,13 @@ import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
 import io from 'socket.io-client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
 const Index = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchAudioQuery, setSearchAudioQuery] = useState('');
     const [keyframes, setDetailKeyframes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [allObjects, setAllObjects] = useState(false);
@@ -15,6 +17,8 @@ const Index = () => {
     const [checkedIds, setCheckedIds] = useState([]);
     const [minScore, setMinScore] = useState(40);
     const [searchTime, setSearchTime] = useState(0)
+    const [showVoiceSearch1, setShowVoiceSearch1] = useState(false)
+    const [showVoiceSearch2, setShowVoiceSearch2] = useState(false)
 
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
@@ -58,6 +62,7 @@ const Index = () => {
             setCheckedIds([...checkedIds, id]);
         }
     };
+
     const handleRangeChange = (e) => {
         // Update the range values in the state
         if (e.target.value >= 40) {
@@ -69,10 +74,11 @@ const Index = () => {
         e.preventDefault();
         setLoading(true);
         console.log('Form submitted with searchQuery:', searchQuery);
+        console.log('Form submitted with searchAudioQuery:', searchAudioQuery);
         try {
             var startTime = performance.now()
             const socket = io('http://localhost:5000');
-            socket.emit('search', { searchQuery });
+            socket.emit('search', { searchQuery, searchAudioQuery });
             socket.on('search_result', (data) => {
                 setDetailKeyframes(data.data)
                 setLoading(false);
@@ -117,13 +123,22 @@ const Index = () => {
                     </p>
                 </label>
                 <div className={cx('object-container')}>
-                    <input type="text" placeholder='Search object...' onChange={(event) => {
-                        setFilterObjects(detailObjects.filter((value) => {
-                            return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
-                        }))
-                    }} />
+                    <div className={cx('search-object-container')}>
+                        <input type="text" placeholder='Search object...' onChange={(event) => {
+                            setFilterObjects(detailObjects.filter((value) => {
+                                return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
+                            }))
+                        }} />
+                        <div>
+                            <button>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+</svg>
+                            </button>
+                            <span>Remove all filters</span>
+                        </div>
+                    </div>
                     <ul className={cx("detail-objects")}>
-
                         {filterObjects.map((item, idx) => (
                             <li key={item.id} className={cx("detail-object")}>
                                 <input
@@ -133,7 +148,7 @@ const Index = () => {
                                     id={idx}
                                     onChange={() => handleCheckboxChange(item[0])}
                                 />
-                                <label for={idx}>
+                                <label className={cx("checkmark")} for={idx}>
                                     <div>{item[0]}</div>
                                     <div>{item[1]}</div>
                                 </label>
@@ -143,33 +158,77 @@ const Index = () => {
                 </div>
             </div>
             {loading ? (
-                <div className={cx("lds-grid")} ><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                <div className={cx('loading-container')}>
+                    <div className={cx("lds-grid")} ><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                </div>
             ) : (
                 <div className={cx("main-box")}>
-                    <div className={cx("search-container")}>
+                    <div className={keyframes.length > 0 ? cx("search-container") : cx("search-container-nothing")}>
                         <form className={cx("search-box")} onSubmit={handleFormSubmit}>
-                            <input type="text" name="search" placeholder="Search (Put the '@' between two sentences if you search in sequence)" className={cx("search-input")} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                            <a className={cx("search-icon")} onClick={handleFormSubmit}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                                </svg>
-                            </a>
-                            
+                            <input type="text"
+                                className={showVoiceSearch1 ? cx("search-voice-input") : cx("voice-input--not-show")}
+                                name="voice-search-1"
+                                placeholder="Search voice text..."
+                            />
+                            <div className={cx("main-search-container")}>
+                                {/* 
+                                <div className={cx("voice-search-control-1")}>
+                                    <div onClick={() => {
+                                        console.log("Show search text 1")
+                                        setShowVoiceSearch1(true)
+                                    }}> <img src="/add.png" /> </div>
+                                    <div onClick={() => {
+                                        console.log("Hide search text 1")
+                                        setShowVoiceSearch1(false)
+                                    }}> <img src="/minus.png" /> </div>
+                                </div> */}
+
+                                <input type="text" name="search"
+                                    placeholder="Search (Put the '@' between two sentences if you search in sequence)"
+                                    className={cx("search-input")} value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    autofocus
+                                />
+                                <a className={cx("search-icon")} onClick={handleFormSubmit}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                    </svg>
+                                </a>
+
+                                <div className={cx("voice-search-control-2")}>
+                                    <div onClick={() => {
+                                        console.log("Show search text 2")
+                                        setShowVoiceSearch2(true)
+                                    }}> <img src="/add.png" /> </div>
+                                    <div onClick={() => {
+                                        console.log("Hide search text 2")
+                                        setShowVoiceSearch2(false)
+                                    }}> <img src="/minus.png" /> </div>
+                                </div>
+                                <button style={{
+                                    display: 'none'
+                                }}></button>
+                            </div>
+
+                            <input type="text"
+                                className={showVoiceSearch2 ? cx("search-voice-input") : cx("voice-input--not-show")}
+                                name="voice-search-2"
+                                placeholder="Filter by voice text (seperate by '@')"
+                                value={searchAudioQuery}
+                                onChange={(e) => {
+                                    setSearchAudioQuery(e.target.value)
+                                }}
+                            />
                         </form>
-                    <p className={cx('time')}>About {searchTime} seconds </p>
+                        <p className={cx('time')}>(About {searchTime} seconds)</p>
                     </div>
                     <div className={cx("keyframe-grid")}>
                         {keyframes.map((keyframe, idx) => {
-                            let check = checkedIds.length == 0 || keyframe["o"].some(obj => {
-                                if (checkedIds.includes(obj["i"])) {
-                                    return true
-                                }
-                                return false
-                            })
-                            // if ((checkedIds.length == 0) || (checkedIds.length != 0 && keyframe["o"].some(obj => {checkedIds.includes(obj) })))
-                            // if ((checkedIds.length == 0) || (checkedIds.length != 0 && keyframe["o"].some(obj => { checkedIds.includes(obj["i"]) }))) {
+
+                            let check = checkedIds.length === 0 || checkedIds.every(id => keyframe["o"].some(obj => obj["i"] === id));
                             if (check) {
                                 return (
+
                                     <div className={cx("keyframe-container")} key={idx}>
                                         <div className={cx("image-box")}>
                                             <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
@@ -215,6 +274,7 @@ const Index = () => {
                                         <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
                                     </div>
                                 )
+
                             }
                         })}
                     </div >

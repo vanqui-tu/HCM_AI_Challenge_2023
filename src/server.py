@@ -46,12 +46,29 @@ def handle_connect():
 def search(message):
     try:
         query = message["searchQuery"].strip()
-        
-        results = model.search(
-            query_text=query,
-            audio_texts=[],
-            topk=200,
-        ) 
+        audioQuery = message["searchAudioQuery"].strip()
+        print(query)
+        print(audioQuery)
+        queries = [q.strip() for q in query.split("@")]
+        audioQueries = [q.strip() for q in  audioQuery.split("@")]
+        print(queries)
+        print(audioQueries)
+        if len(queries) == 1 or (len(queries)== 2 and queries[-1] == ""):
+            print("Normal search")
+            results = model.search(
+                query_text=queries[0],
+                audio_texts=audioQueries,
+                topk=100,
+            ) 
+        else:
+            print("Sequence search")
+            results = model.search_in_sequence(
+                query_text_1=queries[0],
+                query_text_2=queries[1],
+                audio_texts=audioQueries,
+                topk=100,
+            ) 
+        print(results.to_json())
         # print(results.to_json())
 
         emit('search_result', {"data": results.to_json()}, broadcast=False)
