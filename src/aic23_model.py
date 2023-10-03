@@ -52,16 +52,25 @@ class AIC23_Model:
             allow_replace_deleted=allow_replace_deleted,
             num_threads=num_threads,
             method=method,
-            workspace=ROOT_DB,
-        )
-
+            workspace=ROOT_DB
+        )        
         self.root.index(doc_list)
         print("Done")
-
-    def search(self, query_text: str, audio_texts=[], topk=1000) -> FrameDocs:
-        return self.root.search(query_text=query_text, topk=topk).contains(
-            keywords=audio_texts
-        )
+        self.temp = VectorDB(
+            space=space,
+            max_elements=max_elements,
+            ef_construction=ef_construction,
+            ef=ef,
+            M=M,
+            allow_replace_deleted=allow_replace_deleted,
+            num_threads=num_threads,
+            method=method,
+            workspace=TEMP_DB
+        )   
+          
+            
+    def search(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
+        return self.root.search(query_text=query_text, topk=topk).contains(keywords=audio_texts)
 
     def search_and_visualize(
         self, query_text: str, audio_texts=None, topk=1000
@@ -125,7 +134,19 @@ class AIC23_Model:
         )
         frameDocs.visualize()
         return frameDocs
+    
+    def create_temp_db(self, audio_texts=None, new_doc_list=None):        
+        print("Index temporary database...")
+        if new_doc_list == None and audio_texts != None:            
+            new_doc_list =  doc_list.contains(keywords=audio_texts)
+        print(f"Temporary database size: {len(new_doc_list)}")
+        self.temp.index(new_doc_list)  
+        print("Done")
 
-
+    def search_temp_and_visualize(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
+        frameDocs = self.temp.search(query_text=query_text, topk=topk).contains(keywords=audio_texts) 
+        frameDocs.visualize()
+        return frameDocs
+    
 model = AIC23_Model()
 print("Loading model: Done!")
