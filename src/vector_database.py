@@ -105,6 +105,5 @@ class VectorDB:
     def delete(self, del_doc_list: List[FrameDoc]):
         self.DB.delete(docs=DocList[FrameDoc](del_doc_list))
 
-
 if __name__ == "__main__":
     pass

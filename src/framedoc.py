@@ -38,13 +38,15 @@ class FrameDoc(BaseDoc):
     actual_time = 0.0
     fps = 0
     metadata = {}
-    object_labels = set() # object labels
-    
+    object_labels = []
+    link = ""
+    id_frame=""
+
     def __str__(self):
         return f"""
             Video name: {self.video_name}
             Image path: {self.image_path}
-            Keyframe Id: {self.keyframe_id}
+            Keyframe Id: {self.id_frame}
             Actual keyframe idx: {self.actual_idx}
             Time: {self.actual_time}
             FPS: {self.fps}
@@ -107,8 +109,12 @@ class FrameDocs:
     def to_json(self):
         json_frame = [
             {
-                "video": doc.video_name,
-                "frame": doc.actual_idx,
+                "l": doc.link,
+                "v": doc.video_name,
+                "i": doc.id_frame,
+                "f": doc.actual_idx,
+                "t": doc.actual_time,
+                "o": doc.object_labels,
             }
             for doc in self.doc_list
         ]
@@ -162,4 +168,31 @@ def get_all_docs(npy_files) -> FrameDocs:
                         metadata=metadata,
                     )
                 )
+    return FrameDocs(doc_list)
+
+def get_all_docs_v2() -> FrameDocs:
+    doc_list = []
+    with open("../data/detail_keyframes.json", "r") as json_file:
+        detail_keyframes = js.load(json_file)
+    json_file.close()
+    start_video = "L01_V001"
+    features_frames = np.load("../data/features/" + start_video + ".npy")
+    for idx, keyframe in enumerate(tqdm(detail_keyframes)):
+        if keyframe["v"] != start_video:
+            start_video = keyframe["v"]
+            features_frames = np.load("../data/features/" + start_video + ".npy")
+        id_frame = keyframe["i"]
+        id =  int(keyframe["i"].lstrip('0'))
+        doc_list.append(
+            FrameDoc(
+                embedding=features_frames[id - 1],
+                link=keyframe["l"],
+                video_name=keyframe["v"],
+                id_frame=str(id_frame),
+                actual_idx=keyframe["f"],
+                actual_time=keyframe["t"],
+                object_labels=keyframe["o"],
+            )
+        )
+    detail_keyframes.clear()
     return FrameDocs(doc_list)

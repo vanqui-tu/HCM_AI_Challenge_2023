@@ -163,7 +163,11 @@ def reformat_keyframe():
                 )
                 old_path = os.path.join(KEYFRAME_PATH, name, kf)
                 print(f"Change {old_path} to {changed_path}")
-                os.rename(old_path, changed_path)
+                try:
+                    os.rename(old_path, changed_path)
+                except:
+                    print("Error while rename file")
+                    pass
 
 
 def reformat_object():

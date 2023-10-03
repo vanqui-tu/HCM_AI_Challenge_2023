@@ -9,6 +9,7 @@
     "classnames": "^2.3.1",
     "normalize.css": "^8.0.1",
     "papaparse": "^5.4.1",
+    "perf_hooks": "^0.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-papaparse": "^4.1.0",

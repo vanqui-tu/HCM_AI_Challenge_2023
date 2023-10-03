@@ -1,18 +1,18 @@
 from utils import clean_dbs, get_all_feats
 from vector_database import TextEmbedding, VectorDB
-from framedoc import FrameDoc, FrameDocs, get_all_docs
+from framedoc import FrameDoc, FrameDocs, get_all_docs, get_all_docs_v2
 from docarray import DocList
 from const import *
 
 print("Loading model...")
 clean_dbs()
 all_feat_files = get_all_feats(feat=FEATURE_PATH)
-doc_list = get_all_docs(all_feat_files)
+# doc_list = get_all_docs(all_feat_files)
+doc_list = get_all_docs_v2()
 print("Done...")
 
 
 class AIC23_Model:
-    
     def __init__(
         self,
         space="l2",
@@ -24,7 +24,6 @@ class AIC23_Model:
         num_threads=-1,
         method="ANN",
     ) -> None:
-        
         """_summary_
         :param space: Specifies the similarity metric used for the space (options are "l2", "ip", or "cosine"). The default is "l2".
         :type space: str
@@ -73,31 +72,66 @@ class AIC23_Model:
     def search(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
         return self.root.search(query_text=query_text, topk=topk).contains(keywords=audio_texts)
 
-    def search_and_visualize(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
-        frameDocs = self.search(query_text=query_text, audio_texts=audio_texts, topk=topk)
+    def search_and_visualize(
+        self, query_text: str, audio_texts=None, topk=1000
+    ) -> FrameDocs:
+        frameDocs = self.search(
+            query_text=query_text, audio_texts=audio_texts, topk=topk
+        )
         frameDocs.visualize()
         return frameDocs
-    
-    def search_in_sequence_and_visualize(self, query_text_1: str, query_text_2: str, strict_order=False, audio_texts=None, topk=1000) -> FrameDocs:
-        frameDocs_1 = self.search(query_text=query_text_1, audio_texts=audio_texts, topk=topk)
-        frameDocs_2 = self.search(query_text=query_text_2, audio_texts=audio_texts, topk=topk)
+
+    def search_in_sequence(
+        self,
+        query_text_1: str,
+        query_text_2: str,
+        strict_order=False,
+        audio_texts=None,
+        topk=1000,
+    ) -> FrameDocs:
+        frameDocs_1 = self.search(
+            query_text=query_text_1, audio_texts=audio_texts, topk=topk
+        )
+        frameDocs_2 = self.search(
+            query_text=query_text_2, audio_texts=audio_texts, topk=topk
+        )
 
         results = []
         for idx1, frame1 in enumerate(frameDocs_1.doc_list):
             for idx2, frame2 in enumerate(frameDocs_2.doc_list):
-                if (frame1.video_name == frame2.video_name and abs(frame1.actual_time - frame2.actual_time) < 20.0):
-                    if (frame1.actual_time < frame2.actual_time):
+                if (
+                    frame1.video_name == frame2.video_name
+                    and abs(frame1.actual_time - frame2.actual_time) < 20.0
+                ):
+                    if frame1.actual_time < frame2.actual_time:
                         results.append((idx1 + idx2, frame1, frame2))
-                    elif (strict_order == False):
+                    elif strict_order == False:
                         results.append((idx1 + idx2, frame2, frame1))
         results.sort(key=lambda a: a[0])
-
+        
         results_ = []
         for res in results:
             results_.append(res[1])
             results_.append(res[2])
         frameDocs = FrameDocs(results_)
 
+        return frameDocs
+
+    def search_in_sequence_and_visualize(
+        self,
+        query_text_1: str,
+        query_text_2: str,
+        strict_order=False,
+        audio_texts=None,
+        topk=1000,
+    ) -> FrameDocs:
+        frameDocs = self.search_in_sequence(
+            query_text_1=query_text_1,
+            query_text_2=query_text_2,
+            strict_order=strict_order,
+            audio_texts=audio_texts,
+            topk=topk,
+        )
         frameDocs.visualize()
         return frameDocs
     
