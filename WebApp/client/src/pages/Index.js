@@ -5,8 +5,6 @@ import io from 'socket.io-client';
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
-// import img_0007 from '';
-
 const Index = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [keyframes, setDetailKeyframes] = useState([]);
@@ -16,6 +14,7 @@ const Index = () => {
     const [filterObjects, setFilterObjects] = useState([])
     const [checkedIds, setCheckedIds] = useState([]);
     const [minScore, setMinScore] = useState(40);
+    const [searchTime, setSearchTime] = useState(0)
 
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
@@ -71,9 +70,9 @@ const Index = () => {
         setLoading(true);
         console.log('Form submitted with searchQuery:', searchQuery);
         try {
+            var startTime = performance.now()
             const socket = io('http://localhost:5000');
             socket.emit('search', { searchQuery });
-
             socket.on('search_result', (data) => {
                 setDetailKeyframes(data.data)
                 setLoading(false);
@@ -84,6 +83,9 @@ const Index = () => {
                 setLoading(false);
             });
 
+            var endTime = performance.now()
+            console.log(((endTime - startTime) / 1000))
+            setSearchTime(((endTime - startTime) / 1000).toFixed(5))
         } catch (error) {
             console.error('Error:', error);
         }
@@ -122,7 +124,6 @@ const Index = () => {
                 <div className={cx('object-container')}>
                     <input type="text" placeholder='Search object...' onChange={(event) => {
                         console.log(event.target.value)
-
                         setFilterObjects(detailObjects.filter((value) => {
                             return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
                         }))
@@ -149,15 +150,18 @@ const Index = () => {
             </div>
             {loading ? (<p>Is Loading</p>) : (
                 <div className={cx("main-box")}>
-                    <form className={cx("search-box")} onSubmit={handleFormSubmit}>
-                        <input type="text" name="search" placeholder="Search..." className={cx("search-input")} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                        <a className={cx("search-icon")} onClick={handleFormSubmit}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                            </svg>
-                        </a>
-                    </form>
-
+                    <div className={cx("search-container")}>
+                        <form className={cx("search-box")} onSubmit={handleFormSubmit}>
+                            <input type="text" name="search" placeholder="Search (Put the '@' between two sentences if you search in sequence)" className={cx("search-input")} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                            <a className={cx("search-icon")} onClick={handleFormSubmit}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                </svg>
+                            </a>
+                            
+                        </form>
+                    <p className={cx('time')}>About {searchTime} seconds </p>
+                    </div>
                     <div className={cx("keyframe-grid")}>
                         {keyframes.map((keyframe, idx) => (
                             <div className={cx("keyframe-container")} key={idx}>

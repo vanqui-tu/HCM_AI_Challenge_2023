@@ -121,19 +121,25 @@
   margin-right: 20px;
 }
 
-.search-box {
+.search-container{
+  display: flex;
+  flex-direction: column;
   width: 100%;
+}
+
+.search-box {
+  width: 700px;
   height: 50px;
   padding: 10px 20px;
   display: flex;
   justify-content: right;
   align-items: center;
   transition: 0.8s;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  background-color:#3a3b3c;
+  border-radius: 10px;
 }
 
-.search-box:focus-within > .search-input {
-  border-bottom: 2px solid #ffffff;
-}
 
 .search-box .search-input {
   background: transparent;
@@ -144,12 +150,21 @@
   transition: 0.8s;
   width: 800px;
   line-height: 35px;
-
   max-width: 700px;
+  padding: 7.5px 15px;
 }
 
+.search-container .time{
+  margin-top: 10px;
+  font-weight: 600; 
+  font-size: 16px;
+  align-self: end;
+}
 .search-box .search-btn .fas {
   color: #5cbdbb;
+}
+.search-box .search-icon{
+  cursor: pointer;
 }
 
 .object-container{
@@ -166,9 +181,11 @@
   color:#3a3b3c;
   font-weight: 600;
 }
+
 .object-container input:focus{
   outline: none;
 }
+
 .detail-objects {
   list-style: none;
   max-height: 500px;
@@ -225,34 +242,16 @@
 
 /* width */
 ::-webkit-scrollbar {
-  width: 1px;
+  width: 5px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background:#757575;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #3a3b3c;
   border-radius: 5px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.sidebar:hover ::-webkit-scrollbar{
-  width: 10px;
-}
-
-.sidebar:hover ::-webkit-scrollbar-thumb{
-  color: black;
-}
-
-
-.sidebar:hover ::-webkit-scrollbar-thumb:hover {
-  color: black;
 }
