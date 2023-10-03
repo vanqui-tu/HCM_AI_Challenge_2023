@@ -182,7 +182,6 @@ def get_all_docs_v2() -> FrameDocs:
             start_video = keyframe["v"]
             features_frames = np.load("../data/features/" + start_video + ".npy")
         id_frame = keyframe["i"]
-        # print(id_frame)
         id =  int(keyframe["i"].lstrip('0'))
         doc_list.append(
             FrameDoc(
