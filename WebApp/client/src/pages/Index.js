@@ -89,11 +89,6 @@ const Index = () => {
         }
     };
 
-
-    useEffect(() => {
-
-    }, [filterObjects, setFilterObjects])
-
     return (
         <div className={cx("container")}>
             <div className={cx("sidebar")}>
@@ -121,8 +116,6 @@ const Index = () => {
                 </label>
                 <div className={cx('object-container')}>
                     <input type="text" placeholder='Search object...' onChange={(event) => {
-                        console.log(event.target.value)
-
                         setFilterObjects(detailObjects.filter((value) => {
                             return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
                         }))
@@ -147,7 +140,9 @@ const Index = () => {
                     </ul>
                 </div>
             </div>
-            {loading ? (<p>Is Loading</p>) : (
+            {loading ? (
+                <div className={cx("lds-grid")} ><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            ) : (
                 <div className={cx("main-box")}>
                     <form className={cx("search-box")} onSubmit={handleFormSubmit}>
                         <input type="text" name="search" placeholder="Search..." className={cx("search-input")} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
@@ -159,52 +154,64 @@ const Index = () => {
                     </form>
 
                     <div className={cx("keyframe-grid")}>
-                        {keyframes.map((keyframe, idx) => (
-                            <div className={cx("keyframe-container")} key={idx}>
-                                <div className={cx("image-box")}>
-                                    <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
-                                    <div className={cx("bounding-boxes")}>
-                                        {allObjects ? (
+                        {keyframes.map((keyframe, idx) => {
+                            let check = checkedIds.length == 0 || keyframe["o"].some(obj => {
+                                if (checkedIds.includes(obj["i"])) {
+                                    return true
+                                }
+                                return false
+                            })
+                            // if ((checkedIds.length == 0) || (checkedIds.length != 0 && keyframe["o"].some(obj => {checkedIds.includes(obj) })))
+                            // if ((checkedIds.length == 0) || (checkedIds.length != 0 && keyframe["o"].some(obj => { checkedIds.includes(obj["i"]) }))) {
+                            if (check) {
+                                return (
+                                    <div className={cx("keyframe-container")} key={idx}>
+                                        <div className={cx("image-box")}>
+                                            <img src={`http://127.0.0.1:5000/static/${keyframe['v']}/${keyframe["i"]}.jpg`} alt="My Image" />
                                             <div className={cx("bounding-boxes")}>
-                                                {keyframe["o"].map((box, boxIndex) => {
+                                                {allObjects ? (
+                                                    <div className={cx("bounding-boxes")}>
+                                                        {keyframe["o"].map((box, boxIndex) => {
 
-                                                    let score = minScore / 100
-                                                    if (box["s"] >= score) {
+                                                            let score = minScore / 100
+                                                            if (box["s"] >= score) {
 
-                                                        if (checkedIds.length == 0 || checkedIds.includes(box["i"])) {
-                                                            // Image: 400 x 224
-                                                            let ymin = box["b"][0] * 224;
-                                                            let xmin = box["b"][1] * 400;
-                                                            let ymax = box["b"][2] * 224;
-                                                            let xmax = box["b"][3] * 400;
+                                                                if (checkedIds.length == 0 || checkedIds.includes(box["i"])) {
+                                                                    // Image: 400 x 224
+                                                                    let ymin = box["b"][0] * 224;
+                                                                    let xmin = box["b"][1] * 400;
+                                                                    let ymax = box["b"][2] * 224;
+                                                                    let xmax = box["b"][3] * 400;
 
-                                                            return (
-                                                                <div
-                                                                    className={cx("bounding-box")}
-                                                                    key={boxIndex}
-                                                                    style={{
-                                                                        left: xmin + 'px',
-                                                                        top: ymin + 'px',
-                                                                        width: (xmax - xmin) + 'px',
-                                                                        height: (ymax - ymin) + 'px',
-                                                                    }}
-                                                                ></div>
-                                                            )
-                                                        }
-                                                    }
-                                                })}
+                                                                    return (
+                                                                        <div
+                                                                            className={cx("bounding-box")}
+                                                                            key={boxIndex}
+                                                                            style={{
+                                                                                left: xmin + 'px',
+                                                                                top: ymin + 'px',
+                                                                                width: (xmax - xmin) + 'px',
+                                                                                height: (ymax - ymin) + 'px',
+                                                                            }}
+                                                                        ></div>
+                                                                    )
+                                                                }
+                                                            }
+                                                        })}
+                                                    </div>
+                                                ) : (<div></div>)}
                                             </div>
-                                        ) : (<div></div>)}
+                                        </div>
+                                        <div className={cx("keyframe-info")}>
+                                            <span>Video: {keyframe["v"]}</span>
+                                            <span>Keyframe: {keyframe["f"]}</span>
+                                            <span>Time: {keyframe["t"]}s</span>
+                                        </div>
+                                        <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
                                     </div>
-                                </div>
-                                <div className={cx("keyframe-info")}>
-                                    <span>Video: {keyframe["v"]}</span>
-                                    <span>Keyframe: {keyframe["f"]}</span>
-                                    <span>Time: {keyframe["t"]}s</span>
-                                </div>
-                                <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
-                            </div>
-                        ))}
+                                )
+                            }
+                        })}
                     </div >
                 </div>
             )}
