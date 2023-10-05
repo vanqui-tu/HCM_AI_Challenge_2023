@@ -2,7 +2,8 @@ import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
 import io from 'socket.io-client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import SuccessNotify from '../components/SuccessNotify';
+
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
@@ -19,7 +20,11 @@ const Index = () => {
     const [searchTime, setSearchTime] = useState(0)
     const [showVoiceSearch1, setShowVoiceSearch1] = useState(false)
     const [showVoiceSearch2, setShowVoiceSearch2] = useState(false)
-
+    const [sessionID, setSessionID] = useState({})
+    const getSessionIdUrl = "https://eventretrieval.one/api/v1/login"
+    // console.log(process.env.REACT_APP_PASSWORD)
+    // console.log(process.env.REACT_APP_USERNAME)
+    
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
         // Define the API endpoint you want to call
@@ -39,6 +44,18 @@ const Index = () => {
                 console.error('Error fetching data:', error);
                 setLoading(false);
             });
+
+        fetch(getSessionIdUrl, {
+            method: "POST",
+            body: JSON.stringify({
+                username: process.env.REACT_APP_USERNAME,
+                password: process.env.REACT_APP_PASSWORD
+            })
+        }).then(response => response.json())
+            .then(data => {
+                console.log(`Session ID: ${data.sessionId}`)
+                setSessionID(data)
+            })
     }, []);
 
     // TODO: Tạo 1 connect qua giao thức socket
@@ -129,11 +146,13 @@ const Index = () => {
                                 return value[0].toString().includes(event.target.value) || value[1].toString().includes(event.target.value);
                             }))
                         }} />
-                        <div>
+                        <div onClick={() => {
+                            setCheckedIds([])
+                        }}>
                             <button>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-  <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-</svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+                                </svg>
                             </button>
                             <span>Remove all filters</span>
                         </div>
@@ -171,7 +190,7 @@ const Index = () => {
                                 placeholder="Search voice text..."
                             />
                             <div className={cx("main-search-container")}>
-                                {/* 
+
                                 <div className={cx("voice-search-control-1")}>
                                     <div onClick={() => {
                                         console.log("Show search text 1")
@@ -181,7 +200,7 @@ const Index = () => {
                                         console.log("Hide search text 1")
                                         setShowVoiceSearch1(false)
                                     }}> <img src="/minus.png" /> </div>
-                                </div> */}
+                                </div>
 
                                 <input type="text" name="search"
                                     placeholder="Search (Put the '@' between two sentences if you search in sequence)"
@@ -271,13 +290,16 @@ const Index = () => {
                                             <span>Keyframe: {keyframe["f"]}</span>
                                             <span>Time: {keyframe["t"]}s</span>
                                         </div>
-                                        <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
+                                        <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}&sessionid=${sessionID.sessionId}`} target="_blank">Xem chi tiết</a>
                                     </div>
                                 )
 
                             }
                         })}
                     </div >
+                    {
+                        <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
+                    }
                 </div>
             )}
         </div>

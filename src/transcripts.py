@@ -17,8 +17,9 @@ for line in tqdm(lines):
     transcribed_audio_file_name = f"./../data/scripts/{line.strip()}.wav"
     compressed_trans_audio_file_name = f"./../data/scripts/{line.strip()}.mp3"
     zoom_video_file_name = f"./../data/videos/{line.strip()}.mp4"  
-    audioclip = AudioFileClip(zoom_video_file_name)
-    audioclip.write_audiofile(transcribed_audio_file_name)
+    if not os.path.isfile(transcribed_audio_file_name):
+        audioclip = AudioFileClip(zoom_video_file_name)
+        audioclip.write_audiofile(transcribed_audio_file_name)
 
     if GET_AUDIO_FILE:
         continue

@@ -10,6 +10,7 @@ var frameIdx = 0
 var start = 0.0
 var fps = 25
 var name = ""
+var sessionID = ""
 const VideoDetails = () => {
     console.log(window.location.href)
     const [searchParams, setSearchParams] = useSearchParams();
@@ -18,12 +19,12 @@ const VideoDetails = () => {
     start = searchParams.get("start")
     fps = searchParams.get("fps")
     name = searchParams.get("name")
-
+    sessionID = searchParams.get("sessionid")
     const url = `https://www.youtube.com/embed/${videoId}?start=${start}`
     console.log(url)
     return (
         <div className={cx('main')}>
-            <YouTubeVideo videoId={videoId} start={start} fps={fps} name={name}></YouTubeVideo>
+            <YouTubeVideo videoId={videoId} start={start} fps={fps} name={name} sessionID={sessionID}></YouTubeVideo>
         </div>
     )
 }
