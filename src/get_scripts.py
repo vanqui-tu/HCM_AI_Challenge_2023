@@ -6,7 +6,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 METADATA_PATH = "../data/metadata"
 NO_SCRIPT_PATH = "../data/scripts/no_scripts.txt"
 
-get_times = True
+get_times = False
 
 if __name__ == "__main__":
     metadata_list = os.listdir(METADATA_PATH)

@@ -2,7 +2,8 @@ import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
 import io from 'socket.io-client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import SuccessNotify from '../components/SuccessNotify';
+
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
@@ -19,7 +20,11 @@ const Index = () => {
     const [searchTime, setSearchTime] = useState(0)
     const [showVoiceSearch1, setShowVoiceSearch1] = useState(false)
     const [showVoiceSearch2, setShowVoiceSearch2] = useState(false)
-
+    const [sessionID, setSessionID] = useState({})
+    const getSessionIdUrl = "https://eventretrieval.one/api/v1/login"
+    // console.log(process.env.REACT_APP_PASSWORD)
+    // console.log(process.env.REACT_APP_USERNAME)
+    
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
         // Define the API endpoint you want to call
@@ -39,6 +44,18 @@ const Index = () => {
                 console.error('Error fetching data:', error);
                 setLoading(false);
             });
+
+        fetch(getSessionIdUrl, {
+            method: "POST",
+            body: JSON.stringify({
+                username: process.env.REACT_APP_USERNAME,
+                password: process.env.REACT_APP_PASSWORD
+            })
+        }).then(response => response.json())
+            .then(data => {
+                console.log(`Session ID: ${data.sessionId}`)
+                setSessionID(data)
+            })
     }, []);
 
     // TODO: Tạo 1 connect qua giao thức socket
@@ -173,7 +190,7 @@ const Index = () => {
                                 placeholder="Search voice text..."
                             />
                             <div className={cx("main-search-container")}>
-                                
+
                                 <div className={cx("voice-search-control-1")}>
                                     <div onClick={() => {
                                         console.log("Show search text 1")
@@ -273,13 +290,16 @@ const Index = () => {
                                             <span>Keyframe: {keyframe["f"]}</span>
                                             <span>Time: {keyframe["t"]}s</span>
                                         </div>
-                                        <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}`} target="_blank">Xem chi tiết</a>
+                                        <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}&sessionid=${sessionID.sessionId}`} target="_blank">Xem chi tiết</a>
                                     </div>
                                 )
 
                             }
                         })}
                     </div >
+                    {
+                        <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
+                    }
                 </div>
             )}
         </div>

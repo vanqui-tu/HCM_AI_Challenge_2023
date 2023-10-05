@@ -17,31 +17,13 @@ class AIC23_Model:
         self,
         space="l2",
         max_elements=1024,
-        ef_construction=200,
-        ef=10,
-        M=16,
+        ef_construction=400,
+        ef=20,
+        M=48,
         allow_replace_deleted=False,
         num_threads=-1,
         method="ANN",
     ) -> None:
-        """_summary_
-        :param space: Specifies the similarity metric used for the space (options are "l2", "ip", or "cosine"). The default is "l2".
-        :type space: str
-        :param max_elements: Sets the initial capacity of the index, which can be increased dynamically. The default is 1024.
-        :type max_elements: int
-        :param ef_construction: This parameter controls the speed/accuracy trade-off during index construction. The default is 200.
-        :type ef_construction: int
-        :param ef:This parameter controls the query time/accuracy trade-off. The default is 10.
-        :type ef: int
-        :param M: This parameter defines the maximum number of outgoing connections in the graph. The default is 16.
-        :type M: int
-        :param allow_replace_deleted: If set to True, this allows replacement of deleted elements with newly added ones. The default is False.
-        :type allow_replace_deleted: int
-        :param num_threads: This sets the default number of threads to be used during index and search operations. The default is -1 (All).
-        :type num_threads: int
-        Returns:
-            _type_: _description_
-        """
         print("Index root database...")
         self.root = VectorDB(
             space=space,

@@ -3,13 +3,17 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import json
 import csv
+import time
 
+start = time.time()
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")  # Khởi tạo SocketIO với ứng dụng Flask của bạn
+socketio = SocketIO(
+    app, cors_allowed_origins="*"
+)  # Khởi tạo SocketIO với ứng dụng Flask của bạn
 
-app.static_url_path = '/static'
-app.static_folder = '../data/keyframes'
+app.static_url_path = "/static"
+app.static_folder = "../data/keyframes"
 
 print("### | Initial model...")
 from aic23_model import model
@@ -20,29 +24,34 @@ from aic23_model import model
 
 print("### | Get all objects...")
 objects = []
-with open(f"../data/object_labels.csv", 'r', newline="") as file:
+with open(f"../data/object_labels.csv", "r", newline="") as file:
     csv_reader = csv.reader(file)
     next(csv_reader, None)
 
     for row in csv_reader:
         objects.append(row)
 
-@app.route('/initial', methods=['GET'])
+end = time.time()
+print(f"Server initialization takes: {round(((end - start) / 60))}m {round((int(end - start) % 60))}s")
+
+@app.route("/initial", methods=["GET"])
 def initial():
     try:
         # Your processing logic goes here
         # For demonstration purposes, let's just echo the received data
-        result = {"message": "successful", "detail_keyframes":[], "objects": objects}
+        result = {"message": "successful", "detail_keyframes": [], "objects": objects}
         # Return a JSON response
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@socketio.on('connect')
+
+@socketio.on("connect")
 def handle_connect():
     print("Client connected")
 
-@socketio.on('search')
+
+@socketio.on("search")
 def search(message):
     try:
         query = message["searchQuery"].strip()
@@ -50,16 +59,16 @@ def search(message):
         print(query)
         print(audioQuery)
         queries = [q.strip() for q in query.split("@")]
-        audioQueries = [q.strip() for q in  audioQuery.split("@")]
+        audioQueries = [q.strip() for q in audioQuery.split("@")]
         print(queries)
         print(audioQueries)
-        if len(queries) == 1 or (len(queries)== 2 and queries[-1] == ""):
+        if len(queries) == 1 or (len(queries) == 2 and queries[-1] == ""):
             print("Normal search")
             results = model.search(
                 query_text=queries[0],
                 audio_texts=audioQueries,
                 topk=100,
-            ) 
+            )
         else:
             print("Sequence search")
             results = model.search_in_sequence(
@@ -67,14 +76,15 @@ def search(message):
                 query_text_2=queries[1],
                 audio_texts=audioQueries,
                 topk=100,
-            ) 
+            )
         # print(results.to_json())
         # print(results.to_json())
 
-        emit('search_result', {"data": results.to_json()}, broadcast=False)
+        emit("search_result", {"data": results.to_json()}, broadcast=False)
     except Exception as e:
-        emit('search_error', {"error": str(e)}, broadcast=False)
+        emit("search_error", {"error": str(e)}, broadcast=False)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("<<<<<< SERVER RUN | http://localhost:5000 >>>>>>")
     socketio.run(app, debug=False, port=5000)

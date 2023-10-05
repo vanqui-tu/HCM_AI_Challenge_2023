@@ -18,20 +18,22 @@
   width: 1000px;
   background-color: #3a3b3c;
   overflow: hidden;
-  box-shadow: rgba(0, 0, 0, 0.09) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+  box-shadow: rgba(0, 0, 0, 0.09) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px,
+    rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px,
+    rgba(0, 0, 0, 0.09) 0px 32px 16px;
 }
 
-.video-container{
+.video-container {
   width: 720px;
   height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-.video-details{
+.video-details {
   display: flex;
   flex-direction: column;
 }

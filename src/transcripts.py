@@ -6,7 +6,7 @@ import os
 
 NO_SCRIPT_PATH = "./../data/scripts/no_scripts.txt"
 
-GET_AUDIO_FILE = True
+GET_AUDIO_FILE = False
 
 # Doc danh sach
 with open(NO_SCRIPT_PATH, 'r', encoding="utf-8") as file:
@@ -17,8 +17,9 @@ for line in tqdm(lines):
     transcribed_audio_file_name = f"./../data/scripts/{line.strip()}.wav"
     compressed_trans_audio_file_name = f"./../data/scripts/{line.strip()}.mp3"
     zoom_video_file_name = f"./../data/videos/{line.strip()}.mp4"  
-    audioclip = AudioFileClip(zoom_video_file_name)
-    audioclip.write_audiofile(transcribed_audio_file_name)
+    if not os.path.isfile(transcribed_audio_file_name):
+        audioclip = AudioFileClip(zoom_video_file_name)
+        audioclip.write_audiofile(transcribed_audio_file_name)
 
     if GET_AUDIO_FILE:
         continue
