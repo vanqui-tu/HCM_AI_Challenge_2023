@@ -6,7 +6,7 @@ import os
 
 NO_SCRIPT_PATH = "./../data/scripts/no_scripts.txt"
 
-GET_AUDIO_FILE = True
+GET_AUDIO_FILE = False
 
 # Doc danh sach
 with open(NO_SCRIPT_PATH, 'r', encoding="utf-8") as file:

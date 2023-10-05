@@ -5,16 +5,19 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 METADATA_PATH = "../data/metadata"
 NO_SCRIPT_PATH = "../data/scripts/no_scripts.txt"
+FOLDER_DONE = ["L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10", 
+                "L11", "L12", "L13", "L14", "L15", "L16", "L17", "L18", "L19", "L20"]
 
-get_times = True
+get_times = False
 
 if __name__ == "__main__":
     metadata_list = os.listdir(METADATA_PATH)
     no_script_list = ''
     for idx, file in enumerate(tqdm(metadata_list)):
-        if ".json" not in file:
+        if ".json" not in file or file.split("_")[0] in FOLDER_DONE:
             continue
         file_path = os.path.join(METADATA_PATH, file)
+        # print(file_path)
         with open(file_path, encoding="utf-8", errors='ignore') as f:
             file_data = json.load(f)
         f.close()
