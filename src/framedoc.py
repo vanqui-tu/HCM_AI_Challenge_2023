@@ -85,7 +85,7 @@ class FrameDocs:
             for i in range(len(doc_list) - 1, -1, -1):
                 transcript_path = SCRIPT_PATH + doc_list[i].video_name + ".txt"
                 try:
-                    with open(transcript_path, "r") as file:
+                    with open(transcript_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         if not check_script(content, keywords):
                             doc_list.pop(i)
@@ -172,7 +172,7 @@ def get_all_docs(npy_files) -> FrameDocs:
 
 def get_all_docs_v2() -> FrameDocs:
     doc_list = []
-    with open("../data/detail_keyframes.json", "r") as json_file:
+    with open("../data/detail_keyframes.json", "r", encoding="utf-8") as json_file:
         detail_keyframes = js.load(json_file)
     json_file.close()
     start_video = "L01_V001"

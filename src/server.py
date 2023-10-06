@@ -24,7 +24,7 @@ from aic23_model import model
 
 print("### | Get all objects...")
 objects = []
-with open(f"../data/object_labels.csv", "r", newline="") as file:
+with open(f"../data/object_labels.csv", "r", newline="", encoding="utf-8") as file:
     csv_reader = csv.reader(file)
     next(csv_reader, None)
 
