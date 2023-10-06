@@ -26,11 +26,16 @@ def get_detail_frames():
             metadata = json.load(file)
         file.close()  
 
+
         folder_path = os.path.join("./../data/keyframes", folder)
         list_keyframes = os.listdir(folder_path)
 
         for idx, frame in enumerate(list_keyframes):
             frame_path = os.path.join(folder_path, frame)
+
+            # TODO Check FPS 
+            # if map_keyframe[idx][2] != "25.0":
+            #     print(f"Video {folder}, Frame {frame}, FPS {map_keyframe[idx][2]}")
 
             # TODO Get object of frame if confidence > 0.4
             obj_path = frame_path.replace("keyframes", "objects")
@@ -57,6 +62,7 @@ def get_detail_frames():
             obj_frame = {
                 "l": metadata["watch_url"].split("=")[1],   # link video
                 "v": folder,                                # video
+                "fps": map_keyframe[idx][2],
                 "i": frame[:-4],                            # id frame
                 "t": map_keyframe[idx][1],                  # time
                 "f": map_keyframe[idx][3],                  # frame matched
@@ -68,4 +74,4 @@ def get_detail_frames():
         json.dump(list_dataset, json_file)
 
 if __name__ == "__main__":
-    pass
+    get_detail_frames()
