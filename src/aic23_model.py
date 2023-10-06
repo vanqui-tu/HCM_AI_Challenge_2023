@@ -3,6 +3,7 @@ from vector_database import TextEmbedding, VectorDB
 from framedoc import FrameDoc, FrameDocs, get_all_docs, get_all_docs_v2
 from docarray import DocList
 from const import *
+import time
 
 print("Loading model...")
 clean_dbs()
@@ -18,8 +19,8 @@ class AIC23_Model:
         space="l2",
         max_elements=1024,
         ef_construction=400,
-        ef=20,
-        M=48,
+        ef=80,
+        M=64,
         allow_replace_deleted=False,
         num_threads=-1,
         method="ANN",
@@ -34,25 +35,15 @@ class AIC23_Model:
             allow_replace_deleted=allow_replace_deleted,
             num_threads=num_threads,
             method=method,
-            workspace=ROOT_DB
-        )        
+            workspace=ROOT_DB,
+        )
         self.root.index(doc_list)
         print("Done")
-        self.temp = VectorDB(
-            space=space,
-            max_elements=max_elements,
-            ef_construction=ef_construction,
-            ef=ef,
-            M=M,
-            allow_replace_deleted=allow_replace_deleted,
-            num_threads=num_threads,
-            method=method,
-            workspace=TEMP_DB
-        )   
-          
-            
-    def search(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
-        return self.root.search(query_text=query_text, topk=topk).contains_v2(keywords=audio_texts)
+
+    def search(self, query_text: str, audio_texts=None, topk=1000) -> FrameDocs:
+        return self.root.search(query_text=query_text, topk=topk).contains(
+            keywords=audio_texts
+        )
 
     def search_and_visualize(
         self, query_text: str, audio_texts=None, topk=1000
@@ -90,7 +81,7 @@ class AIC23_Model:
                     elif strict_order == False:
                         results.append((idx1 + idx2, frame2, frame1))
         results.sort(key=lambda a: a[0])
-        
+
         results_ = []
         for res in results:
             results_.append(res[1])
@@ -116,19 +107,49 @@ class AIC23_Model:
         )
         frameDocs.visualize()
         return frameDocs
-    
-    def create_temp_db(self, audio_texts=None, new_doc_list=None):        
-        print("Index temporary database...")
-        if new_doc_list == None and audio_texts != None:            
-            new_doc_list =  doc_list.contains(keywords=audio_texts)
-        print(f"Temporary database size: {len(new_doc_list)}")
-        self.temp.index(new_doc_list)  
-        print("Done")
 
-    def search_temp_and_visualize(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
-        frameDocs = self.temp.search(query_text=query_text, topk=topk).contains(keywords=audio_texts) 
-        frameDocs.visualize()
-        return frameDocs
-    
+    # def create_temp_db(self, audio_texts=None, new_doc_list=None):
+    #     start = time.time()
+
+    #     self.temp = VectorDB(
+    #         space="l2",
+    #         max_elements=1024,
+    #         ef_construction=16,
+    #         ef=100,
+    #         M=128,
+    #         allow_replace_deleted=False,
+    #         num_threads=-1,
+    #         method="ANN",
+    #     )
+
+    #     print("Index temporary database...")
+    #     if new_doc_list == None and audio_texts != None:
+    #         start2 = time.time()
+    #         new_doc_list = doc_list.contains(keywords=audio_texts)
+    #         end2 = time.time()
+    #         print(
+    #             f"Filter text: {round(((end2 - start2) / 60))}m {round((int(end2 - start2) % 60))}s"
+    #         )
+    #     print(f"Temporary database size: {len(new_doc_list)}")
+    #     self.temp.index(new_doc_list)
+    #     end = time.time()
+    #     print(f"Done: {round(((end - start) / 60))}m {round((int(end - start) % 60))}s")
+
+    # def search_temp_and_visualize(
+    #     self, query_text: str, audio_texts=None, topk=1000
+    # ) -> FrameDocs:
+    #     frameDocs = self.temp.search(query_text=query_text, topk=topk).contains(
+    #         keywords=audio_texts
+    #     )
+    #     frameDocs.visualize()
+    #     return frameDocs
+
+    # def filter_audio_and_search(
+    #     self, query_text: str, audio_texts=None, topk=1000
+    # ) -> FrameDocs:
+    #     self.create_temp_db(audio_texts=audio_texts)
+    #     return self.temp.search(query_text=query_text, topk=topk)
+
+
 model = AIC23_Model()
 print("Loading model: Done!")

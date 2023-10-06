@@ -73,12 +73,11 @@ class FrameDocs:
     """_summary_
         Filtering using objects and keywords
     """
+
     def contains(
         self, keywords = None
     ):
-       
         doc_list = self.doc_list.copy()
-        
         # Filter by keyword in scripts
         if keywords:
             keywords = [kw.lower() for kw in keywords]
@@ -211,21 +210,22 @@ def get_all_docs_v2() -> FrameDocs:
     start_video = "L01_V001"
     features_frames = np.load("../data/features/" + start_video + ".npy")
     for idx, keyframe in enumerate(tqdm(detail_keyframes)):
-        if keyframe["v"] != start_video:
-            start_video = keyframe["v"]
-            features_frames = np.load("../data/features/" + start_video + ".npy")
-        id_frame = keyframe["i"]
-        id =  int(keyframe["i"].lstrip('0'))
-        doc_list.append(
-            FrameDoc(
-                embedding=features_frames[id - 1],
-                link=keyframe["l"],
-                video_name=keyframe["v"],
-                id_frame=str(id_frame),
-                actual_idx=keyframe["f"],
-                actual_time=keyframe["t"],
-                object_labels=keyframe["o"],
+        if keyframe["v"] not in ["L22_V023", "L22_V024", "L35_V005", "L18_V006", "L19_V048", "L20_V010"]:
+            if keyframe["v"] != start_video:
+                start_video = keyframe["v"]
+                features_frames = np.load("../data/features/" + start_video + ".npy")
+            id_frame = keyframe["i"]
+            id =  int(keyframe["i"].lstrip('0'))
+            doc_list.append(
+                FrameDoc(
+                    embedding=features_frames[id - 1],
+                    link=keyframe["l"],
+                    video_name=keyframe["v"],
+                    id_frame=str(id_frame),
+                    actual_idx=keyframe["f"],
+                    actual_time=keyframe["t"],
+                    object_labels=keyframe["o"],
+                )
             )
-        )
     detail_keyframes.clear()
     return FrameDocs(doc_list)

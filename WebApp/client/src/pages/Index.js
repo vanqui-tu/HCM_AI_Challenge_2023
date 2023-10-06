@@ -3,13 +3,15 @@ import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
 import io from 'socket.io-client';
 import SuccessNotify from '../components/SuccessNotify';
-
+import { ToastContainer, toast } from 'react-toastify';
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
 const Index = () => {
+
     const [searchQuery, setSearchQuery] = useState('');
     const [searchAudioQuery, setSearchAudioQuery] = useState('');
+    // const [firstSearchAudioQuery, setFirstSearchAudioQuery] = useState('');
     const [keyframes, setDetailKeyframes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [allObjects, setAllObjects] = useState(false);
@@ -18,13 +20,13 @@ const Index = () => {
     const [checkedIds, setCheckedIds] = useState([]);
     const [minScore, setMinScore] = useState(40);
     const [searchTime, setSearchTime] = useState(0)
-    const [showVoiceSearch1, setShowVoiceSearch1] = useState(false)
+    // const [showVoiceSearch1, setShowVoiceSearch1] = useState(false)
     const [showVoiceSearch2, setShowVoiceSearch2] = useState(false)
     const [sessionID, setSessionID] = useState({})
     const getSessionIdUrl = "https://eventretrieval.one/api/v1/login"
-    // console.log(process.env.REACT_APP_PASSWORD)
-    // console.log(process.env.REACT_APP_USERNAME)
-    
+    const [submitResult, setSubmitResult] = useState({})
+
+    const topks = [100, 200, 300, 400, 500, 100]
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
     useEffect(() => {
         // Define the API endpoint you want to call
@@ -92,6 +94,8 @@ const Index = () => {
         setLoading(true);
         console.log('Form submitted with searchQuery:', searchQuery);
         console.log('Form submitted with searchAudioQuery:', searchAudioQuery);
+        // console.log('Form submitted with firstSearchAudioQuery:', firstSearchAudioQuery);
+
         try {
             var startTime = performance.now()
             const socket = io('http://localhost:5000');
@@ -113,6 +117,35 @@ const Index = () => {
             console.error('Error:', error);
         }
     };
+
+    const handleFormSubmitAnswer = async (e, name, currentFrame, sessionId) => {
+        e.preventDefault();
+        console.log(`${name} ${currentFrame} ${sessionId}`)
+        try {
+            fetch('https://eventretrieval.one/api/v1/submit?' + new URLSearchParams({
+                item: name,
+                frame: currentFrame,
+                session: sessionId
+            })).then(response => response.json())
+                .then(data => {
+                    console.log(Object.values(data))
+                    setSubmitResult(data)
+
+                })
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        
+        toast.success('Form submitted successfully!', {
+            position: 'top-right', // You can change the notification position
+            autoClose: 3000, // Notification will automatically close after 3 seconds
+          });
+    };
+
+
+    console.log(Object.keys(submitResult))
+    console.log(Object.values(submitResult))
 
     return (
         <div className={cx("container")}>
@@ -184,14 +217,19 @@ const Index = () => {
                 <div className={cx("main-box")}>
                     <div className={keyframes.length > 0 ? cx("search-container") : cx("search-container-nothing")}>
                         <form className={cx("search-box")} onSubmit={handleFormSubmit}>
-                            <input type="text"
+                            {/* <input type="text"
                                 className={showVoiceSearch1 ? cx("search-voice-input") : cx("voice-input--not-show")}
                                 name="voice-search-1"
-                                placeholder="Search voice text..."
-                            />
+                                placeholder="Filter by voice text first..."
+                                value={firstSearchAudioQuery}
+                                onChange={(e) => {
+                                    setFirstSearchAudioQuery(e.target.value)
+                                    setSearchAudioQuery("")
+                                }}
+                            /> */}
                             <div className={cx("main-search-container")}>
 
-                                <div className={cx("voice-search-control-1")}>
+                                {/* <div className={cx("voice-search-control-1")}>
                                     <div onClick={() => {
                                         console.log("Show search text 1")
                                         setShowVoiceSearch1(true)
@@ -199,8 +237,9 @@ const Index = () => {
                                     <div onClick={() => {
                                         console.log("Hide search text 1")
                                         setShowVoiceSearch1(false)
+                                        setFirstSearchAudioQuery("")
                                     }}> <img src="/minus.png" /> </div>
-                                </div>
+                                </div> */}
 
                                 <input type="text" name="search"
                                     placeholder="Search (Put the '@' between two sentences if you search in sequence)"
@@ -218,15 +257,19 @@ const Index = () => {
                                     <div onClick={() => {
                                         console.log("Show search text 2")
                                         setShowVoiceSearch2(true)
+
                                     }}> <img src="/add.png" /> </div>
                                     <div onClick={() => {
                                         console.log("Hide search text 2")
                                         setShowVoiceSearch2(false)
+                                        setSearchAudioQuery("")
                                     }}> <img src="/minus.png" /> </div>
                                 </div>
                                 <button style={{
                                     display: 'none'
-                                }}></button>
+                                }} type="submit"></button>
+
+
                             </div>
 
                             <input type="text"
@@ -242,7 +285,7 @@ const Index = () => {
                         <p className={cx('time')}>(About {searchTime} seconds)</p>
                     </div>
                     <div className={cx("keyframe-grid")}>
-                        {keyframes.map((keyframe, idx) => {
+                        {keyframes.slice(0, Math.min(keyframes.length, 250)).map((keyframe, idx) => {
 
                             let check = checkedIds.length === 0 || checkedIds.every(id => keyframe["o"].some(obj => obj["i"] === id));
                             if (check) {
@@ -261,10 +304,10 @@ const Index = () => {
 
                                                                 if (checkedIds.length == 0 || checkedIds.includes(box["i"])) {
                                                                     // Image: 400 x 224
-                                                                    let ymin = box["b"][0] * 224;
-                                                                    let xmin = box["b"][1] * 400;
-                                                                    let ymax = box["b"][2] * 224;
-                                                                    let xmax = box["b"][3] * 400;
+                                                                    let ymin = box["b"][0] * 280;
+                                                                    let xmin = box["b"][1] * 500;
+                                                                    let ymax = box["b"][2] * 280;
+                                                                    let xmax = box["b"][3] * 500;
 
                                                                     return (
                                                                         <div
@@ -291,18 +334,52 @@ const Index = () => {
                                             <span>Time: {keyframe["t"]}s</span>
                                         </div>
                                         <a href={`/videos?videoId=${keyframe["l"]}&frameIdx=${keyframe["f"]}&start=${keyframe["t"]}&fps=${keyframe['fps'] === undefined ? 25 : keyframe["fps"]}&name=${keyframe["v"]}&sessionid=${sessionID.sessionId}`} target="_blank">Xem chi tiết</a>
+
+                                        <form className={cx('submit-form')} method="GET" onSubmit={(e) => handleFormSubmitAnswer(e, keyframe["v"], keyframe["f"], sessionID.sessionId)}>
+                                            <button>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cloud-upload" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z" />
+                                                    <path fill-rule="evenodd" d="M7.646 4.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V14.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3z" />
+                                                </svg>
+                                            </button>
+                                            <span>
+                                                Submit answer
+                                            </span>
+                                            <input value={keyframe["v"]}></input>
+                                            <input value={keyframe["f"]}></input>
+                                            <input value={sessionID.sessionId}></input>
+                                        </form>
+
                                     </div>
                                 )
 
                             }
                         })}
                     </div >
-                    {
-                        <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
-                    }
+
                 </div>
             )}
+            {
+                <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
+            }
+            {/* <div className={cx('submission-notify-container')}>
+                {
+
+                    Object.values(submitResult).length === 3 && Object.values(submitResult)[2] === true ?
+                        Object.values(submitResult)[0] == "CORRECT" &&
+                            Object.values(submitResult)[1] == "Submission correct!" ?
+                            <ToastContainer/>
+                            :
+                            <ToastContainer/>
+                        :
+                        Object.values(submitResult).length === 2 &&
+                        Object.values(submitResult)[1] === false &&
+                        <ToastContainer/>
+                }
+            </div> */}
         </div>
+
+
     );
 }
 
