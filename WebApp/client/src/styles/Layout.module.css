@@ -19,6 +19,7 @@ body {
   overflow-y: overlay;
   font-family: monospace;
   min-height: 100vh;
+  position: relative;
 }
 
 .wrapper {
@@ -27,4 +28,5 @@ body {
   align-items: center;
   background-color: #18191a;
   min-height: 100vh;
+  position: relative;
 }
