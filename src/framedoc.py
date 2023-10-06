@@ -93,6 +93,39 @@ class FrameDocs:
                     pass
         return FrameDocs(doc_list=doc_list)
 
+    def contains_v2(
+        self, keywords = None
+    ):  
+        print("Use contains v2")
+        # Get list video
+        videos = []
+        for i in range(len(doc_list) - 1, -1, -1):
+            videos.append(doc_list[i].video_name)
+        videos = list(set(videos))
+
+        filtered_videos = []
+        if keywords:
+            keywords = [kw.lower() for kw in keywords]
+            for video in videos:
+                transcript_path = SCRIPT_PATH + video + ".txt"
+                try:
+                    with open(transcript_path, "r") as file:
+                        content = file.read()
+                        if check_script(content, keywords):
+                            filtered_videos.append(video)
+                except FileNotFoundError:
+                    pass
+                
+        filtered_doc_list = []
+        for i in range(len(doc_list) - 1, -1, -1):
+            if doc_list[i].video_name in filtered_videos:
+                filtered_doc_list.append(doc_list[i])
+
+        return FrameDocs(doc_list=filtered_doc_list)
+    
+    def get_doc_list(self):
+        return self.doc_list
+
     def predict(
         self, csv_name, objects = None, keywords = None, mode=0
     ):

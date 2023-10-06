@@ -52,7 +52,7 @@ class AIC23_Model:
           
             
     def search(self, query_text: str, audio_texts=None,topk=1000) -> FrameDocs:
-        return self.root.search(query_text=query_text, topk=topk).contains(keywords=audio_texts)
+        return self.root.search(query_text=query_text, topk=topk).contains_v2(keywords=audio_texts)
 
     def search_and_visualize(
         self, query_text: str, audio_texts=None, topk=1000
