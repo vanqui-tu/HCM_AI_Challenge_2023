@@ -2,13 +2,12 @@ import classNames from 'classnames/bind';
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/Index.module.css'
 import io from 'socket.io-client';
-import SuccessNotify from '../components/SuccessNotify';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import Notification from "../components/SubmitingNotification";
 // import Papa from "papaparse";
 const cx = classNames.bind(styles);
 
 const Index = () => {
-
     const [searchQuery, setSearchQuery] = useState('');
     const [searchAudioQuery, setSearchAudioQuery] = useState('');
     // const [firstSearchAudioQuery, setFirstSearchAudioQuery] = useState('');
@@ -25,6 +24,8 @@ const Index = () => {
     const [sessionID, setSessionID] = useState({})
     const getSessionIdUrl = "https://eventretrieval.one/api/v1/login"
     const [submitResult, setSubmitResult] = useState({})
+
+    const [showAlert, setShowAlert] = useState(false);
 
     const topks = [100, 200, 300, 400, 500, 100]
     // TODO: Khởi tạo các tài nguyên mặc định cho UI
@@ -56,8 +57,37 @@ const Index = () => {
         }).then(response => response.json())
             .then(data => {
                 console.log(`Session ID: ${data.sessionId}`)
+                console.log(Object.values(data))
                 setSessionID(data)
+                var notify;
+                if (Object.values(data).length === 4 &&
+                    data.username === process.env.REACT_APP_USERNAME) {
+                    notify = () => toast.success("Get session ID: SUCCESSFUL!", {
+                        position: "top-right",
+                        autoClose: 2000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "dark",
+                    });
+                }
+                else {
+                    notify = () => toast.error("Get session ID: FAILED!", {
+                        position: "top-right",
+                        autoClose: 2000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "dark",
+                    });
+                }
+                notify()
             })
+
     }, []);
 
     // TODO: Tạo 1 connect qua giao thức socket
@@ -130,22 +160,47 @@ const Index = () => {
                 .then(data => {
                     console.log(Object.values(data))
                     setSubmitResult(data)
-
+                    var notify;
+                if (Object.values(data).length >= 2 &&
+                Object.values(data)[0] == "CORRECT!") {
+                    notify = () => toast.success(Object.values(data)[0], {
+                        position: "top-right",
+                        autoClose: 2000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "dark",
+                    });
+                }
+                else {
+                    notify = () => toast.error(Object.values(data)[0], {
+                        position: "top-right",
+                        autoClose: 2000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "dark",
+                    });
+                }
+                notify()
                 })
 
         } catch (error) {
             console.error('Error:', error);
         }
-        
-        toast.success('Form submitted successfully!', {
-            position: 'top-right', // You can change the notification position
-            autoClose: 3000, // Notification will automatically close after 3 seconds
-          });
+
+        // toast.success('Form submitted successfully!', {
+        //     position: 'top-right', // You can change the notification position
+        //     autoClose: 3000, // Notification will automatically close after 3 seconds
+        //   });
     };
 
 
-    console.log(Object.keys(submitResult))
-    console.log(Object.values(submitResult))
+    // console.log(Object.keys(submitResult))
 
     return (
         <div className={cx("container")}>
@@ -358,25 +413,9 @@ const Index = () => {
                     </div >
 
                 </div>
-            )}
-            {
-                <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
-            }
-            <div className={cx('submission-notify-container')}>
-                {
-
-                    Object.values(submitResult).length === 3 && Object.values(submitResult)[2] === true ?
-                        Object.values(submitResult)[0] == "CORRECT" &&
-                            Object.values(submitResult)[1] == "Submission correct!" ?
-                            <ToastContainer/>
-                            :
-                            <ToastContainer/>
-                        :
-                        Object.values(submitResult).length === 2 &&
-                        Object.values(submitResult)[1] === false &&
-                        <ToastContainer/>
-                }
-            </div>
+            )}      
+            <Notification/>
+  
         </div>
 
 
