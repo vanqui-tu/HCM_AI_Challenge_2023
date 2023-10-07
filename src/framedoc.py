@@ -84,7 +84,7 @@ class FrameDocs:
             for i in range(len(doc_list) - 1, -1, -1):
                 transcript_path = SCRIPT_PATH + doc_list[i].video_name + ".txt"
                 try:
-                    with open(transcript_path, "r") as file:
+                    with open(transcript_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         if not check_script(content, keywords):
                             doc_list.pop(i)
@@ -92,6 +92,51 @@ class FrameDocs:
                     pass
         return FrameDocs(doc_list=doc_list)
 
+    def contains_v2(
+        self, keywords = None
+    ):  
+        print("Use contains v2")
+        # Get list video
+        videos = []
+        for i in range(len(doc_list) - 1, -1, -1):
+            videos.append(doc_list[i].video_name)
+        videos = list(set(videos))
+
+        filtered_videos = []
+        if keywords:
+            keywords = [kw.lower() for kw in keywords]
+            for video in videos:
+                transcript_path = SCRIPT_PATH + video + ".txt"
+                try:
+                    with open(transcript_path, "r") as file:
+                        content = file.read()
+                        if check_script(content, keywords):
+                            filtered_videos.append(video)
+                except FileNotFoundError:
+                    pass
+                
+        filtered_doc_list = []
+        for i in range(len(doc_list) - 1, -1, -1):
+            if doc_list[i].video_name in filtered_videos:
+                filtered_doc_list.append(doc_list[i])
+
+        return FrameDocs(doc_list=filtered_doc_list)
+    
+    def get_doc_list(self):
+        return self.doc_list
+
+    def predict(
+        self, csv_name, objects = None, keywords = None, mode=0
+    ):
+        max_lines = 100
+        keywords = [kw.lower() for kw in keywords]
+        self = self.contains(objects=objects, keywords=keywords, search_mode=mode)
+        with open(csv_name, "w") as f:
+            for i in range(min(max_lines, len(self))):
+                row_text = (
+                    f"{self.doc_list[i].video_name}, {self.doc_list[i].actual_idx}\n"
+                )
+                f.write(row_text)
 
     def to_json(self):
         json_frame = [
@@ -159,7 +204,7 @@ def get_all_docs(npy_files) -> FrameDocs:
 
 def get_all_docs_v2() -> FrameDocs:
     doc_list = []
-    with open("../data/detail_keyframes.json", "r") as json_file:
+    with open("../data/detail_keyframes.json", "r", encoding="utf-8") as json_file:
         detail_keyframes = js.load(json_file)
     json_file.close()
     start_video = "L01_V001"

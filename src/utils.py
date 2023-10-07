@@ -39,7 +39,7 @@ def filter_by_detail_scripts(keyword=""):
             "s": 
         """
         if len(times) != 0:
-            with open("../data/metadata/" + file) as f:
+            with open("../data/metadata/" + file, encoding="utf-8") as f:
                 metadata = js.load(f)
             f.close()
             list_scripts.append(
@@ -269,7 +269,7 @@ def load_all_objects():
     for path in tqdm(paths):
         objects_paths = [os.path.join(path, name) for name in os.listdir(path)]
         for objects_path in tqdm(objects_paths):
-            with open(file=objects_path, mode="r") as f:
+            with open(file=objects_path, mode="r", encoding="utf-8") as f:
                 datas = json.load(f)
                 for i, label in enumerate(datas["detection_class_labels"]):
                     if label not in storage["label"]:
