@@ -362,7 +362,7 @@ const Index = () => {
             {
                 <SuccessNotify success={Object.keys(sessionID).length === 4 && sessionID.username === process.env.REACT_APP_USERNAME}></SuccessNotify>
             }
-            {/* <div className={cx('submission-notify-container')}>
+            <div className={cx('submission-notify-container')}>
                 {
 
                     Object.values(submitResult).length === 3 && Object.values(submitResult)[2] === true ?
@@ -376,7 +376,7 @@ const Index = () => {
                         Object.values(submitResult)[1] === false &&
                         <ToastContainer/>
                 }
-            </div> */}
+            </div>
         </div>
 
 
